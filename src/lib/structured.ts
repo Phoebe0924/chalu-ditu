@@ -1,0 +1,195 @@
+import {
+  OPPORTUNITY_PATHS,
+  type ActionAsset,
+  type FeedbackDiagnosis,
+  type OpportunityAssessment,
+  type OpportunityPath,
+  type PathEvaluation,
+} from "@/lib/types";
+
+function isOpportunityPath(value: unknown): value is OpportunityPath {
+  return OPPORTUNITY_PATHS.includes(value as OpportunityPath);
+}
+
+export function validateAssessment(
+  value: Partial<OpportunityAssessment>,
+): Omit<OpportunityAssessment, "id" | "createdAt" | "model"> {
+  const paths = value.pathEvaluations;
+  if (
+    !value.identityPositioning ||
+    !Array.isArray(value.marketValues) ||
+    !Array.isArray(value.evidenceLedger) ||
+    !Array.isArray(paths) ||
+    paths.length !== OPPORTUNITY_PATHS.length ||
+    !Array.isArray(value.recommendedPaths) ||
+    !value.targetProfile ||
+    !value.entryDesign ||
+    !Array.isArray(value.riskBoundaries) ||
+    !Array.isArray(value.evidenceToCollectNext) ||
+    typeof value.immediateNextStep !== "string"
+  ) {
+    throw new Error("模型返回的机会评估缺少必要字段。");
+  }
+
+  const uniquePaths = new Set(paths.map((item) => item.path));
+  const uniqueRanks = new Set(paths.map((item) => item.rank));
+  if (
+    uniquePaths.size !== OPPORTUNITY_PATHS.length ||
+    uniqueRanks.size !== OPPORTUNITY_PATHS.length ||
+    paths.some(
+      (item) =>
+        !isOpportunityPath(item.path) ||
+        !["high", "medium", "low"].includes(item.priority) ||
+        item.rank < 1 ||
+        item.rank > 6,
+    )
+  ) {
+    throw new Error("六条机会路径的名称或排序无效。");
+  }
+
+  const evidenceIds = new Set(value.evidenceLedger.map((item) => item.id));
+  if (
+    value.evidenceLedger.length < 3 ||
+    value.marketValues.some((item) =>
+      item.evidenceIds.some((id) => !evidenceIds.has(id)),
+    )
+  ) {
+    throw new Error("价值主张未完整回溯到证据账本。");
+  }
+
+  return value as Omit<OpportunityAssessment, "id" | "createdAt" | "model">;
+}
+
+export function validateAssets(
+  value: Array<Partial<ActionAsset>>,
+  assessment: OpportunityAssessment,
+): Array<Omit<ActionAsset, "id" | "status" | "createdAt" | "updatedAt">> {
+  if (!Array.isArray(value) || value.length < 1) {
+    throw new Error("模型未生成有效行动资产。");
+  }
+
+  const evidenceIds = new Set(assessment.evidenceLedger.map((item) => item.id));
+  return value.map((asset) => {
+    if (
+      !asset.type ||
+      !asset.title ||
+      !asset.recommendedPath ||
+      !isOpportunityPath(asset.recommendedPath) ||
+      !asset.audience ||
+      !asset.purpose ||
+      !asset.content ||
+      !Array.isArray(asset.sourceEvidenceIds) ||
+      !Array.isArray(asset.guardrails) ||
+      asset.sourceEvidenceIds.some((id) => !evidenceIds.has(id))
+    ) {
+      throw new Error("行动资产缺少字段或引用了不存在的证据。");
+    }
+    return asset as Omit<
+      ActionAsset,
+      "id" | "status" | "createdAt" | "updatedAt"
+    >;
+  });
+}
+
+export function validateDiagnosis(
+  value: Partial<FeedbackDiagnosis>,
+): Omit<FeedbackDiagnosis, "id" | "actionId" | "createdAt" | "model"> {
+  const layers = [
+    "activation",
+    "target",
+    "opening",
+    "evidence",
+    "request",
+    "collaboration",
+    "delivery",
+    "progress",
+  ];
+  if (
+    !value.failureLayer ||
+    !layers.includes(value.failureLayer) ||
+    !value.diagnosis ||
+    !Array.isArray(value.signals) ||
+    !Array.isArray(value.preserve) ||
+    !Array.isArray(value.change) ||
+    !value.nextAction
+  ) {
+    throw new Error("模型返回的反馈诊断不完整。");
+  }
+  return value as Omit<
+    FeedbackDiagnosis,
+    "id" | "actionId" | "createdAt" | "model"
+  >;
+}
+
+export function assessmentToMarkdown(
+  assessment: OpportunityAssessment,
+  assets: ActionAsset[],
+) {
+  const paths = [...assessment.pathEvaluations]
+    .sort((a, b) => a.rank - b.rank)
+    .map(
+      (item: PathEvaluation) =>
+        `${item.rank}. **${item.path}（${item.priority}）**：${item.rationale}\n   - 风险：${item.risks.join("；") || "无"}\n   - 证据缺口：${item.evidenceGaps.join("；") || "无"}\n   - 暂不优先条件：${item.whyNotNow}`,
+    )
+    .join("\n");
+
+  const ledger = assessment.evidenceLedger
+    .map(
+      (item) =>
+        `### ${item.id} · ${item.valueClaim}\n- 事实：${item.fact}\n- 证据：${item.evidence.join("；")}\n- 能证明：${item.proves}\n- 不能证明：${item.doesNotProve}\n- 待补证：${item.missingEvidence.join("；") || "无"}\n- 表达边界：${item.boundary}`,
+    )
+    .join("\n\n");
+
+  const assetMarkdown = assets
+    .map(
+      (asset) =>
+        `### ${asset.title}\n\n${asset.content}\n\n> 证据引用：${asset.sourceEvidenceIds.join("、")}；使用边界：${asset.guardrails.join("；")}`,
+    )
+    .join("\n\n");
+
+  return `# 非标机会工作包
+
+## 身份定位
+
+${assessment.identityPositioning.positioningStatement}
+
+- 不宜被当作：${assessment.identityPositioning.notStandardCandidateFor}
+- 更像：${assessment.identityPositioning.opportunityTalentType}
+
+## 事实—价值—证据—边界账本
+
+${ledger}
+
+## 六条机会路径
+
+${paths}
+
+## 推荐路径
+
+${assessment.recommendedPaths.map((item) => `- ${item}`).join("\n")}
+
+## 目标对象画像
+
+- 人：${assessment.targetProfile.people.join("；")}
+- 公司：${assessment.targetProfile.companies.join("；")}
+- 团队：${assessment.targetProfile.teams.join("；")}
+- 暂避：${assessment.targetProfile.avoid.join("；")}
+
+## 机会入口
+
+- 开口角度：${assessment.entryDesign.openingAngle}
+- 对方可能关心：${assessment.entryDesign.counterpartQuestions.join("；")}
+- 可提供价值：${assessment.entryDesign.valueOffered.join("；")}
+- 最低风险下一步：${assessment.entryDesign.lowestRiskStep}
+
+## 风险与下一步
+
+${assessment.riskBoundaries.map((item) => `- ${item}`).join("\n")}
+
+**今天的行动：** ${assessment.immediateNextStep}
+
+## 行动资产
+
+${assetMarkdown || "尚未生成行动资产。"}
+`;
+}
