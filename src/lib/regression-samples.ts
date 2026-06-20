@@ -12,6 +12,15 @@ export type RegressionSample = {
     forbiddenClaims: string[];
     requiredAssets: string[];
     requiredEvidenceGaps: string[];
+    requiredVerificationLevels?: Array<
+      "verified" | "self_reported_consistent" | "self_reported_isolated"
+    >;
+    factVerificationChecks?: Array<{
+      factIncludes: string;
+      allowedLevels: Array<
+        "verified" | "self_reported_consistent" | "self_reported_isolated"
+      >;
+    }>;
   };
 };
 
@@ -52,6 +61,21 @@ export const REGRESSION_SAMPLES: RegressionSample[] = [
       forbiddenClaims: ["工程师", "商业成功", "增长专家"],
       requiredAssets: ["两周试点", "创始人私信", "约聊提纲"],
       requiredEvidenceGaps: ["外部用户反馈", "商业结果"],
+      requiredVerificationLevels: [
+        "verified",
+        "self_reported_consistent",
+        "self_reported_isolated",
+      ],
+      factVerificationChecks: [
+        {
+          factIncludes: "6 年",
+          allowedLevels: ["self_reported_isolated"],
+        },
+        {
+          factIncludes: "LightPic",
+          allowedLevels: ["verified", "self_reported_consistent"],
+        },
+      ],
     },
   },
   {

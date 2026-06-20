@@ -56,6 +56,10 @@ export type TargetStatus = (typeof TARGET_STATUSES)[number];
 export type ActionStatus = (typeof ACTION_STATUSES)[number];
 export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
 export type Priority = "high" | "medium" | "low";
+export type EvidenceVerificationLevel =
+  | "verified"
+  | "self_reported_consistent"
+  | "self_reported_isolated";
 export type ActionAssetType =
   | "founder_message"
   | "weak_tie_message"
@@ -96,6 +100,9 @@ export type EvidenceLedgerItem = {
   fact: string;
   valueClaim: string;
   evidence: string[];
+  verificationLevel: EvidenceVerificationLevel;
+  verificationBasis: string;
+  verificationUpgradeSuggestion: string;
   proves: string;
   doesNotProve: string;
   missingEvidence: string[];
@@ -228,7 +235,7 @@ export type FeedbackDiagnosis = {
 };
 
 export type WorkspaceData = {
-  version: 2;
+  version: 3;
   startedAt: string;
   form: OpportunityFormData;
   assessment: OpportunityAssessment | null;

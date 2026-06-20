@@ -1,11 +1,24 @@
 import {
   OPPORTUNITY_PATHS,
   type ActionAsset,
+  type EvidenceVerificationLevel,
   type FeedbackDiagnosis,
   type OpportunityAssessment,
   type OpportunityPath,
   type PathEvaluation,
 } from "@/lib/types";
+
+const VERIFICATION_LEVELS: EvidenceVerificationLevel[] = [
+  "verified",
+  "self_reported_consistent",
+  "self_reported_isolated",
+];
+
+const VERIFICATION_LABELS: Record<EvidenceVerificationLevel, string> = {
+  verified: "可独立验证",
+  self_reported_consistent: "自述—内部一致",
+  self_reported_isolated: "自述—孤证",
+};
 
 function isOpportunityPath(value: unknown): value is OpportunityPath {
   return OPPORTUNITY_PATHS.includes(value as OpportunityPath);
@@ -50,6 +63,13 @@ export function validateAssessment(
   const evidenceIds = new Set(value.evidenceLedger.map((item) => item.id));
   if (
     value.evidenceLedger.length < 3 ||
+    evidenceIds.size !== value.evidenceLedger.length ||
+    value.evidenceLedger.some(
+      (item) =>
+        !VERIFICATION_LEVELS.includes(item.verificationLevel) ||
+        !item.verificationBasis?.trim() ||
+        !item.verificationUpgradeSuggestion?.trim(),
+    ) ||
     value.marketValues.some((item) =>
       item.evidenceIds.some((id) => !evidenceIds.has(id)),
     )
@@ -68,7 +88,10 @@ export function validateAssets(
     throw new Error("模型未生成有效行动资产。");
   }
 
-  const evidenceIds = new Set(assessment.evidenceLedger.map((item) => item.id));
+  const usableEvidence = assessment.evidenceLedger.filter(
+    (item) => item.verificationLevel !== "self_reported_isolated",
+  );
+  const evidenceIds = new Set(usableEvidence.map((item) => item.id));
   return value.map((asset) => {
     if (
       !asset.type ||
@@ -79,15 +102,31 @@ export function validateAssets(
       !asset.purpose ||
       !asset.content ||
       !Array.isArray(asset.sourceEvidenceIds) ||
+      asset.sourceEvidenceIds.length === 0 ||
       !Array.isArray(asset.guardrails) ||
       asset.sourceEvidenceIds.some((id) => !evidenceIds.has(id))
     ) {
       throw new Error("行动资产缺少字段或引用了不存在的证据。");
     }
-    return asset as Omit<
+    const referencesSelfReported = asset.sourceEvidenceIds.some(
+      (id) =>
+        usableEvidence.find((item) => item.id === id)?.verificationLevel ===
+        "self_reported_consistent",
+    );
+    const normalized = asset as Omit<
       ActionAsset,
       "id" | "status" | "createdAt" | "updatedAt"
     >;
+    if (
+      referencesSelfReported &&
+      !normalized.guardrails.some((item) => item.includes("自述"))
+    ) {
+      normalized.guardrails = [
+        ...normalized.guardrails,
+        "引用了自述—内部一致信息：必须保持第一人称自陈，不得写成第三方已验证成果。",
+      ];
+    }
+    return normalized;
   });
 }
 
@@ -129,14 +168,14 @@ export function assessmentToMarkdown(
     .sort((a, b) => a.rank - b.rank)
     .map(
       (item: PathEvaluation) =>
-        `${item.rank}. **${item.path}（${item.priority}）**：${item.rationale}\n   - 风险：${item.risks.join("；") || "无"}\n   - 证据缺口：${item.evidenceGaps.join("；") || "无"}\n   - 暂不优先条件：${item.whyNotNow}`,
+        `${item.rank}. **${item.path}（建议优先级：${item.priority}）**：${item.rationale}\n   - 风险：${item.risks.join("；") || "无"}\n   - 证据缺口：${item.evidenceGaps.join("；") || "无"}\n   - 暂不优先条件：${item.whyNotNow}`,
     )
     .join("\n");
 
   const ledger = assessment.evidenceLedger
     .map(
       (item) =>
-        `### ${item.id} · ${item.valueClaim}\n- 事实：${item.fact}\n- 证据：${item.evidence.join("；")}\n- 能证明：${item.proves}\n- 不能证明：${item.doesNotProve}\n- 待补证：${item.missingEvidence.join("；") || "无"}\n- 表达边界：${item.boundary}`,
+        `### ${item.id} · ${item.valueClaim}\n- 事实：${item.fact}\n- 证据：${item.evidence.join("；")}\n- 验证等级：${item.verificationLevel}（${VERIFICATION_LABELS[item.verificationLevel]}）\n- 验证依据：${item.verificationBasis}\n- 能证明：${item.proves}\n- 不能证明：${item.doesNotProve}\n- 待补证：${item.missingEvidence.join("；") || "无"}\n- 最快补证行动：${item.verificationUpgradeSuggestion}\n- 表达边界：${item.boundary}`,
     )
     .join("\n\n");
 

@@ -352,7 +352,7 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
         <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[10px] text-[#8a8c84]">
           <span className="inline-flex items-center gap-1.5">
             <ShieldCheck size={12} />
-            本地 v2 工作区 · 不自动发送 · 每项价值需回溯证据
+            本地 v3 工作区 · 不自动发送 · 每项价值需回溯证据与验证等级
           </span>
           <span>{hydrated ? "已启用本地自动保存" : "正在读取本地工作区"}</span>
           {packageMinutes !== null && (

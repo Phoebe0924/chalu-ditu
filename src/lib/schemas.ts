@@ -24,6 +24,15 @@ const opportunityPathSchema = {
   enum: OPPORTUNITY_PATHS,
 } as const;
 
+const verificationLevelSchema = {
+  type: "string",
+  enum: [
+    "verified",
+    "self_reported_consistent",
+    "self_reported_isolated",
+  ],
+} as const;
+
 export const assessmentSchema = closedObject({
   identityPositioning: closedObject({
     notStandardCandidateFor: stringSchema,
@@ -45,6 +54,9 @@ export const assessmentSchema = closedObject({
       fact: stringSchema,
       valueClaim: stringSchema,
       evidence: stringArraySchema,
+      verificationLevel: verificationLevelSchema,
+      verificationBasis: stringSchema,
+      verificationUpgradeSuggestion: stringSchema,
       proves: stringSchema,
       doesNotProve: stringSchema,
       missingEvidence: stringArraySchema,

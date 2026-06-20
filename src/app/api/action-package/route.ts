@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { generateStructured, LlmConfigurationError } from "@/lib/llm";
 import { buildActionPackageMessages } from "@/lib/prompts";
 import { actionPackageSchema } from "@/lib/schemas";
-import { validateAssets } from "@/lib/structured";
+import { validateAssessment, validateAssets } from "@/lib/structured";
 import type {
   ActionAsset,
   OpportunityAssessment,
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+    validateAssessment(body.assessment);
 
     const messages = buildActionPackageMessages(
       body.form,
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
           {
             role: "user",
             content:
-              "上一次行动资产未通过业务校验。请重新生成 3-5 项，所有 sourceEvidenceIds 必须来自评估中的 evidenceLedger，且材料可直接使用。",
+              "上一次行动资产未通过业务校验。请重新生成 3-5 项：sourceEvidenceIds 只能来自安全上下文，禁止使用 self_reported_isolated；self_reported_consistent 必须使用第一人称自陈，且材料可直接使用。",
           },
         ],
         schemaName: "action_package_retry",

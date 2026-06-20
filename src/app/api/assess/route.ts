@@ -60,7 +60,7 @@ export async function POST(request: Request) {
           {
             role: "user",
             content:
-              "上一次输出未通过业务校验。请重新生成，确保六条路径恰好各出现一次、rank 为 1-6 且互不重复，所有价值主张引用真实存在的 evidenceLedger ID，不伪造证据。",
+              "上一次输出未通过业务校验。请重新生成：六条路径各出现一次，rank 1-6 互不重复；每个证据条目必须是验证等级一致的原子事实，并提供具体 verificationBasis 与 verificationUpgradeSuggestion；所有价值主张引用真实 evidenceLedger ID，不伪造证据。",
           },
         ],
         schemaName: "opportunity_assessment_retry",

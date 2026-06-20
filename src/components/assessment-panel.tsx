@@ -1,7 +1,10 @@
 "use client";
 
 import { ArrowRight, CheckCircle2, ShieldAlert } from "lucide-react";
-import type { OpportunityAssessment } from "@/lib/types";
+import type {
+  EvidenceVerificationLevel,
+  OpportunityAssessment,
+} from "@/lib/types";
 import { EmptyPanel, PrimaryButton } from "@/components/workspace-ui";
 
 type Props = {
@@ -14,6 +17,24 @@ const PRIORITY_LABELS = {
   high: "高",
   medium: "中",
   low: "低",
+};
+
+const VERIFICATION_META: Record<
+  EvidenceVerificationLevel,
+  { label: string; className: string }
+> = {
+  verified: {
+    label: "可独立验证",
+    className: "bg-[#e4ebe4] text-[#46604f]",
+  },
+  self_reported_consistent: {
+    label: "自述—内部一致",
+    className: "bg-[#f5ead8] text-[#855f2f]",
+  },
+  self_reported_isolated: {
+    label: "自述—孤证",
+    className: "bg-[#f1e5dc] text-[#8a432f]",
+  },
 };
 
 export function AssessmentPanel({
@@ -63,6 +84,9 @@ export function AssessmentPanel({
       <section className="panel overflow-hidden">
         <div className="border-b border-[#e2ddd3] bg-[#faf7f1] px-5 py-4 sm:px-6">
           <h2 className="text-base font-semibold">六条路径的可解释排序</h2>
+          <p className="mt-1 text-xs text-[#777970]">
+            “高 / 中 / 低”表示建议优先级，不是成功概率或模型置信度。
+          </p>
         </div>
         <div className="divide-y divide-[#e8e3da]">
           {[...assessment.pathEvaluations]
@@ -83,7 +107,7 @@ export function AssessmentPanel({
                           : "bg-[#efede8] text-[#777970]"
                     }`}
                   >
-                    {PRIORITY_LABELS[path.priority]}优先
+                    建议{PRIORITY_LABELS[path.priority]}优先
                   </span>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-[#55584f]">
@@ -120,15 +144,25 @@ export function AssessmentPanel({
                   {item.id}
                 </span>
                 <h3 className="text-sm font-semibold">{item.valueClaim}</h3>
+                <span
+                  className={`ml-auto rounded-full px-2 py-1 text-[10px] font-semibold ${VERIFICATION_META[item.verificationLevel].className}`}
+                >
+                  {VERIFICATION_META[item.verificationLevel].label}
+                </span>
               </div>
               <dl className="mt-4 space-y-3 text-xs leading-5">
                 <LedgerRow label="事实" value={item.fact} />
                 <LedgerRow label="证据" value={item.evidence.join("；")} />
+                <LedgerRow label="验证依据" value={item.verificationBasis} />
                 <LedgerRow label="能证明" value={item.proves} />
                 <LedgerRow label="不能证明" value={item.doesNotProve} />
                 <LedgerRow
                   label="待补证"
                   value={item.missingEvidence.join("；") || "无"}
+                />
+                <LedgerRow
+                  label="最快补证行动"
+                  value={item.verificationUpgradeSuggestion}
                 />
                 <LedgerRow label="边界" value={item.boundary} />
               </dl>

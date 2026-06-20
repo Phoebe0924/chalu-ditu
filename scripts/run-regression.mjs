@@ -27,7 +27,59 @@ function evaluate(sample, assessment, assets) {
   const topThree = sorted.slice(0, 3).map((item) => item.path);
   const serializedAssessment = JSON.stringify(assessment);
   const serializedAssets = JSON.stringify(assets);
+  const serializedAssetContent = assets.map((asset) => asset.content).join("\n");
   const failures = [];
+  const verificationLevels = new Set(
+    assessment.evidenceLedger.map((item) => item.verificationLevel),
+  );
+  const isolatedEvidenceIds = new Set(
+    assessment.evidenceLedger
+      .filter((item) => item.verificationLevel === "self_reported_isolated")
+      .map((item) => item.id),
+  );
+
+  if (
+    assessment.evidenceLedger.some(
+      (item) =>
+        !item.verificationLevel ||
+        !item.verificationBasis?.trim() ||
+        !item.verificationUpgradeSuggestion?.trim(),
+    )
+  ) {
+    failures.push("证据条目缺少验证等级、依据或补证行动");
+  }
+  if (
+    assets.some((asset) =>
+      asset.sourceEvidenceIds.some((id) => isolatedEvidenceIds.has(id)),
+    )
+  ) {
+    failures.push("行动资产引用了自述孤证");
+  }
+  for (const level of sample.expected.requiredVerificationLevels || []) {
+    if (!verificationLevels.has(level)) {
+      failures.push(`缺少验证等级：${level}`);
+    }
+  }
+  for (const check of sample.expected.factVerificationChecks || []) {
+    const matchingFacts = assessment.evidenceLedger.filter((item) =>
+      [
+        item.fact,
+        item.valueClaim,
+        item.evidence.join(" "),
+        item.verificationBasis,
+      ]
+        .join(" ")
+        .includes(check.factIncludes),
+    );
+    if (
+      matchingFacts.length === 0 ||
+      matchingFacts.some(
+        (item) => !check.allowedLevels.includes(item.verificationLevel),
+      )
+    ) {
+      failures.push(`事实验证等级不符合预期：${check.factIncludes}`);
+    }
+  }
 
   if (!sample.expected.prioritize.some((path) => topThree.includes(path))) {
     failures.push("预期优先路径未进入前三");
@@ -51,7 +103,11 @@ function evaluate(sample, assessment, assets) {
   }
   for (const claim of sample.expected.forbiddenClaims) {
     const unsafePatterns = [`我是${claim}`, `作为${claim}`, `资深${claim}`, `成功${claim}`];
-    if (unsafePatterns.some((pattern) => serializedAssets.includes(pattern))) {
+    if (
+      unsafePatterns.some((pattern) =>
+        serializedAssetContent.includes(pattern),
+      )
+    ) {
       failures.push(`出现高风险正向身份声明：${claim}`);
     }
   }

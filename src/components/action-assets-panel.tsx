@@ -79,6 +79,9 @@ export function ActionAssetsPanel({ assessment, assets, onChange }: Props) {
                 <p className="mt-1 text-xs leading-5">
                   {asset.sourceEvidenceIds.join("、")}
                 </p>
+                <p className="mt-1 text-[10px] leading-4 text-[#777970]">
+                  已自动排除“自述—孤证”条目
+                </p>
               </div>
               <div>
                 <p className="text-[11px] font-semibold text-[#777970]">使用边界</p>
