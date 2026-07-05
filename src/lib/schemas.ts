@@ -119,6 +119,15 @@ export const actionPackageSchema = closedObject({
       purpose: stringSchema,
       content: stringSchema,
       sourceEvidenceIds: stringArraySchema,
+      claimChecks: {
+        type: "array",
+        items: closedObject({
+          claim: stringSchema,
+          sourceEvidenceIds: stringArraySchema,
+          verificationLevel: verificationLevelSchema,
+          expressionBoundary: stringSchema,
+        }),
+      },
       guardrails: stringArraySchema,
     }),
   },

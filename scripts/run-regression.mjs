@@ -22,6 +22,12 @@ function includesAny(serialized, values) {
   return values.some((value) => serialized.includes(value));
 }
 
+const verificationStrength = {
+  self_reported_isolated: 0,
+  self_reported_consistent: 1,
+  verified: 2,
+};
+
 function evaluate(sample, assessment, assets) {
   const sorted = [...assessment.pathEvaluations].sort((a, b) => a.rank - b.rank);
   const topThree = sorted.slice(0, 3).map((item) => item.path);
@@ -36,6 +42,9 @@ function evaluate(sample, assessment, assets) {
     assessment.evidenceLedger
       .filter((item) => item.verificationLevel === "self_reported_isolated")
       .map((item) => item.id),
+  );
+  const evidenceById = new Map(
+    assessment.evidenceLedger.map((item) => [item.id, item]),
   );
 
   if (
@@ -55,6 +64,33 @@ function evaluate(sample, assessment, assets) {
   ) {
     failures.push("行动资产引用了自述孤证");
   }
+  for (const asset of assets) {
+    if (!Array.isArray(asset.claimChecks) || asset.claimChecks.length === 0) {
+      failures.push(`行动资产缺少主张核查：${asset.title}`);
+      continue;
+    }
+    for (const claimCheck of asset.claimChecks) {
+      if (
+        !Array.isArray(claimCheck.sourceEvidenceIds) ||
+        claimCheck.sourceEvidenceIds.length === 0 ||
+        claimCheck.sourceEvidenceIds.some(
+          (id) =>
+            isolatedEvidenceIds.has(id) ||
+            !asset.sourceEvidenceIds.includes(id) ||
+            !evidenceById.has(id),
+        )
+      ) {
+        failures.push(`主张核查引用证据无效：${asset.title}`);
+        continue;
+      }
+      const weakestLevel = claimCheck.sourceEvidenceIds
+        .map((id) => evidenceById.get(id).verificationLevel)
+        .sort((a, b) => verificationStrength[a] - verificationStrength[b])[0];
+      if (claimCheck.verificationLevel !== weakestLevel) {
+        failures.push(`主张核查未按最低证据等级标注：${asset.title}`);
+      }
+    }
+  }
   for (const level of sample.expected.requiredVerificationLevels || []) {
     if (!verificationLevels.has(level)) {
       failures.push(`缺少验证等级：${level}`);
@@ -71,13 +107,19 @@ function evaluate(sample, assessment, assets) {
         .join(" ")
         .includes(check.factIncludes),
     );
+    const validMatches = matchingFacts.filter((item) =>
+      check.allowedLevels.includes(item.verificationLevel),
+    );
+    if (matchingFacts.length === 0 || validMatches.length === 0) {
+      failures.push(`事实验证等级不符合预期：${check.factIncludes}`);
+    }
     if (
-      matchingFacts.length === 0 ||
+      check.requireAllMatches &&
       matchingFacts.some(
         (item) => !check.allowedLevels.includes(item.verificationLevel),
       )
     ) {
-      failures.push(`事实验证等级不符合预期：${check.factIncludes}`);
+      failures.push(`事实验证等级存在非保守条目：${check.factIncludes}`);
     }
   }
 

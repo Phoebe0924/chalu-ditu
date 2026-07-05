@@ -61,7 +61,7 @@ export async function POST(request: Request) {
           {
             role: "user",
             content:
-              "上一次行动资产未通过业务校验。请重新生成 3-5 项：sourceEvidenceIds 只能来自安全上下文，禁止使用 self_reported_isolated；self_reported_consistent 必须使用第一人称自陈，且材料可直接使用。",
+              "上一次行动资产未通过业务校验。请重新生成 3-5 项：sourceEvidenceIds 和 claimChecks.sourceEvidenceIds 只能来自安全上下文，禁止使用 self_reported_isolated；每条 claimChecks.verificationLevel 必须等于所引用证据中的最低验证等级；self_reported_consistent 必须使用第一人称自陈，且材料可直接使用。",
           },
         ],
         schemaName: "action_package_retry",

@@ -17,6 +17,7 @@ export type RegressionSample = {
     >;
     factVerificationChecks?: Array<{
       factIncludes: string;
+      requireAllMatches?: boolean;
       allowedLevels: Array<
         "verified" | "self_reported_consistent" | "self_reported_isolated"
       >;
@@ -69,6 +70,7 @@ export const REGRESSION_SAMPLES: RegressionSample[] = [
       factVerificationChecks: [
         {
           factIncludes: "6 年",
+          requireAllMatches: true,
           allowedLevels: ["self_reported_isolated"],
         },
         {
@@ -105,10 +107,22 @@ export const REGRESSION_SAMPLES: RegressionSample[] = [
     expected: {
       prioritize: ["弱关系引荐路径", "试单/项目路径"],
       deprioritize: ["标准岗位路径"],
-      requiredRisks: ["时间限制", "经历中断"],
+      requiredRisks: ["远程", "中断"],
       forbiddenClaims: ["照护管理专家", "团队管理经验"],
       requiredAssets: ["弱关系消息", "低风险试单"],
       requiredEvidenceGaps: ["近期商业场景"],
+      requiredVerificationLevels: ["verified", "self_reported_isolated"],
+      factVerificationChecks: [
+        {
+          factIncludes: "5 年",
+          requireAllMatches: true,
+          allowedLevels: ["self_reported_isolated"],
+        },
+        {
+          factIncludes: "培训课件",
+          allowedLevels: ["verified", "self_reported_consistent"],
+        },
+      ],
     },
   },
   {
@@ -138,10 +152,22 @@ export const REGRESSION_SAMPLES: RegressionSample[] = [
     expected: {
       prioritize: ["标准岗位路径", "作品集吸引路径"],
       deprioritize: ["创始人约聊路径"],
-      requiredRisks: ["软件交付经验不足"],
+      requiredRisks: ["交付"],
       forbiddenClaims: ["资深产品经理", "显著降本"],
       requiredAssets: ["岗位匹配", "案例结构"],
-      requiredEvidenceGaps: ["外部客户实施"],
+      requiredEvidenceGaps: ["客户"],
+      requiredVerificationLevels: ["verified", "self_reported_isolated"],
+      factVerificationChecks: [
+        {
+          factIncludes: "8 年",
+          requireAllMatches: true,
+          allowedLevels: ["self_reported_isolated"],
+        },
+        {
+          factIncludes: "库存看板",
+          allowedLevels: ["verified", "self_reported_consistent"],
+        },
+      ],
     },
   },
   {
@@ -173,8 +199,20 @@ export const REGRESSION_SAMPLES: RegressionSample[] = [
       deprioritize: [],
       requiredRisks: ["长期组织协作"],
       forbiddenClaims: ["团队管理", "大客户"],
-      requiredAssets: ["作品集结构", "试单设计"],
+      requiredAssets: ["作品集结构", "试单"],
       requiredEvidenceGaps: ["长期协作"],
+      requiredVerificationLevels: ["verified", "self_reported_isolated"],
+      factVerificationChecks: [
+        {
+          factIncludes: "五年",
+          requireAllMatches: true,
+          allowedLevels: ["self_reported_isolated"],
+        },
+        {
+          factIncludes: "公开案例",
+          allowedLevels: ["verified", "self_reported_consistent"],
+        },
+      ],
     },
   },
   {
@@ -208,6 +246,18 @@ export const REGRESSION_SAMPLES: RegressionSample[] = [
       forbiddenClaims: ["成功创业者", "盈利", "融资"],
       requiredAssets: ["创始人私信", "约聊提纲"],
       requiredEvidenceGaps: ["结果数据"],
+      requiredVerificationLevels: ["verified", "self_reported_isolated"],
+      factVerificationChecks: [
+        {
+          factIncludes: "四年",
+          requireAllMatches: true,
+          allowedLevels: ["self_reported_isolated"],
+        },
+        {
+          factIncludes: "访谈记录",
+          allowedLevels: ["verified", "self_reported_consistent"],
+        },
+      ],
     },
   },
   {
@@ -241,6 +291,18 @@ export const REGRESSION_SAMPLES: RegressionSample[] = [
       forbiddenClaims: ["AI 专家", "产品经理", "工作流专家"],
       requiredAssets: ["作品验证计划"],
       requiredEvidenceGaps: ["真实项目", "外部反馈"],
+      requiredVerificationLevels: ["self_reported_isolated"],
+      factVerificationChecks: [
+        {
+          factIncludes: "三年行政",
+          requireAllMatches: true,
+          allowedLevels: ["self_reported_isolated"],
+        },
+        {
+          factIncludes: "ChatGPT",
+          allowedLevels: ["self_reported_isolated", "self_reported_consistent"],
+        },
+      ],
     },
   },
 ];

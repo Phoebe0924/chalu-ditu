@@ -37,7 +37,16 @@ export function ActionAssetsPanel({ assessment, assets, onChange }: Props) {
     onChange(
       assets.map((asset) =>
         asset.id === id
-          ? { ...asset, ...patch, updatedAt: new Date().toISOString() }
+          ? {
+              ...asset,
+              ...patch,
+              status:
+                typeof patch.content === "string" &&
+                patch.content !== asset.content
+                  ? "draft"
+                  : (patch.status ?? asset.status),
+              updatedAt: new Date().toISOString(),
+            }
           : asset,
       ),
     );
@@ -88,6 +97,34 @@ export function ActionAssetsPanel({ assessment, assets, onChange }: Props) {
                 <p className="mt-1 text-xs leading-5">
                   {asset.guardrails.join("；")}
                 </p>
+              </div>
+            </div>
+            <div className="rounded-xl border border-[#e2ddd3] bg-[#fffdf8] p-3">
+              <p className="text-[11px] font-semibold text-[#777970]">
+                主张核查
+              </p>
+              <div className="mt-2 space-y-2">
+                {(asset.claimChecks ?? []).length > 0 ? (
+                  asset.claimChecks.map((check, index) => (
+                    <div
+                      key={`${asset.id}-claim-${index}`}
+                      className="rounded-lg bg-[#f8f5ee] p-2 text-[11px] leading-5 text-[#55584f]"
+                    >
+                      <p className="font-semibold text-[#33352f]">
+                        {check.claim}
+                      </p>
+                      <p className="mt-1">
+                        证据：{check.sourceEvidenceIds.join("、")} · 等级：
+                        {check.verificationLevel}
+                      </p>
+                      <p className="mt-1">边界：{check.expressionBoundary}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-[11px] leading-5 text-[#777970]">
+                    旧版行动资产未生成主张核查；建议重新生成行动包。
+                  </p>
+                )}
               </div>
             </div>
             <button

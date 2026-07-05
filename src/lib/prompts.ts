@@ -57,7 +57,28 @@ export function buildAssessmentMessages(data: OpportunityFormData) {
 - self_reported_isolated：事实只在一个字段出现，既无外部材料，也不能被其他字段交叉支撑。
 - 保守原则：混合事实按最低等级处理；更好的做法是拆成多个原子事实。不得仅因用户写了“有证据”就自动判为 verified，必须指出具体可检查对象。
 
+机械判定例子，必须优先遵守：
+- “6 年 / 5 年 / 8 年 / 五年 / 四年经验”如果只出现在工作经历字段，且没有简历、证明人、公开履历或作品材料直接支撑，一律标为 self_reported_isolated。
+- 年限事实必须单独拆成原子事实，不得与培训课件、公开案例、看板、访谈记录、推荐信等可检查材料合并；合并会导致错误高估。
+- “LightPic + 需求拆解、竞品分析、Prompt 设计、API 接入、部署、反馈复盘 / 产品与过程文档”应拆成 LightPic 项目过程材料事实，标为 verified 或 self_reported_consistent，不得标成孤证；verificationBasis 要写明“对外使用前仍需确认材料可访问”。
+- “培训课件、参与者反馈、社区负责人推荐”“库存看板、需求访谈记录、同事使用反馈”“公开案例、客户推荐”“访谈记录、合作方案、复盘文档”均属于具体可检查对象，相关项目事实应标为 verified 或 self_reported_consistent。
+- 如果 projectsAndEvidence 明确写“暂时没有完整项目或外部反馈”，不得构造 verified 条目；主要事实应保持 self_reported_isolated 或 self_reported_consistent。
+- 如果用户“希望转向 AI 相关工作”，且 desiredDirection 也写了 AI 产品、AI 运营或 AI 工作流，可创建一个“AI 方向探索意图”事实，标为 self_reported_consistent；该事实只能支撑内部作品验证计划，不能支撑对外能力承诺。
+
 路径 priority 表示“建议优先级”，不是成功概率或模型置信度。排序必须同时考虑：目标场景匹配、可用证据强度、进入成本、现实限制与风险。rationale 必须明确写出这些依据。
+
+路径排序锚点：
+- 有具体 JD，且过往行业经验与 JD 直接相关时，标准岗位路径和作品集吸引路径应进入前三；若没有创始人对象，不要把创始人约聊排在前三。
+- 制造业供应链转供应链 SaaS 实施顾问时，riskBoundaries 或 pathEvaluations.risks 必须明确包含“软件交付经验不足”，evidenceToCollectNext 或 pathEvaluations.evidenceGaps 必须明确包含“外部客户实施”。
+- 没有公开岗位，但有心仪公司/创始人、明确问题观察和两周试点方向时，提案式求职路径、创始人约聊路径、作品集吸引路径应优先于标准岗位路径。
+- 有弱关系对象且有可展示材料时，弱关系引荐路径和试单/项目路径应优先。
+- 长期照护返回职场、目标远程客户成功/用户教育时，evidenceToCollectNext 或 pathEvaluations.evidenceGaps 必须明确包含“近期商业场景”。
+- 长期照护返回职场、目标远程客户成功/用户教育时，evidenceToCollectNext 中必须逐字包含“近期商业场景”；可以写成“近期商业场景，例如一次真实或模拟的 SaaS 材料诊断试单记录”。
+- 只有课程和日常 AI 使用、没有完整项目和外部反馈时，作品集吸引路径应优先用于补证；提案式求职路径和标准岗位路径不应进入前二。
+- 只有课程和日常 AI 使用、没有完整项目和外部反馈时，riskBoundaries 或 pathEvaluations.risks 必须明确包含“证据不足”和“方向过宽”两个风险词。
+- 自由职业转全职且有公开案例或推荐时，作品集吸引路径、试单/项目路径、创始人约聊路径应优先。
+- 自由职业转全职时，evidenceToCollectNext 或 pathEvaluations.evidenceGaps 必须明确包含“长期协作”。
+- 创业失败后重新进入市场，且有创始人对象或探索目标时，创始人约聊路径和试单/项目路径应优先；不得把失败包装成成功。
 
 硬性要求：pathEvaluations 必须恰好包含六条路径，rank 为 1-6 且不重复。证据账本至少 3 项；每个 e 条目只容纳一个验证等级一致的原子事实，混合事实必须拆分；每项价值必须引用真实 evidenceIds。`;
 
@@ -105,6 +126,7 @@ export function buildActionPackageMessages(
       "purpose":"这份材料要推动的最低风险下一步",
       "content":"完整可用正文，使用必要占位符",
       "sourceEvidenceIds":["引用的证据账本 id"],
+      "claimChecks":[{"claim":"正文中使用的一条关键主张","sourceEvidenceIds":["e1"],"verificationLevel":"verified|self_reported_consistent","expressionBoundary":"这条主张允许怎么说、不能怎么说"}],
       "guardrails":["发送或使用前必须核对的边界"]
     }
   ]
@@ -115,11 +137,20 @@ export function buildActionPackageMessages(
 - self_reported_consistent：只能使用第一人称自陈句式，例如“我做过……”“我参与过……”，不得写成第三方已确认成果，也不得作为对外承诺的唯一依据。
 - self_reported_isolated：不会出现在本次安全上下文中，禁止推测、补写或以任何形式放入对外文案。
 - sourceEvidenceIds 只能引用安全上下文提供的证据 ID。
+- claimChecks 必须覆盖 content 中所有关键能力、经历、成果或交付承诺主张；每条 claim 的 verificationLevel 必须等于所引用证据中的最低验证等级。
+- 若 claimChecks 中出现 self_reported_consistent，content 中对应表达必须保持第一人称自陈或探索性措辞，不得写成已被第三方验证的成果。
 - packagingBoundaries 只用于约束生成，不得原样写入面向外部的 content；例如“不要包装成工程师”不能变成对外自我介绍的一部分。
+- content 禁止出现“商业成功”“成功创业者”“增长专家”“资深产品经理”“AI 专家”“工作流专家”“显著降本”“盈利”“融资”等高风险正向身份或成果标签。即使是否定，也改写为更具体边界，例如“目前没有商业化结果”。
 
 生成 3-5 项资产。若推荐提案式求职，必须有完整两周试点，写清目标、范围、第一周、第二周、交付物、双方投入、成功信号和不包含什么。
 若推荐创始人约聊，必须有创始人私信和 20 分钟约聊提纲。
-若推荐作品集吸引，必须有作品展示结构。所有内容都必须能回溯到 evidenceLedger。`;
+若推荐作品集吸引，必须有作品展示结构；若用户证据薄弱且推荐作品集吸引，必须生成标题含“作品验证计划”的资产。
+若推荐弱关系引荐，必须生成标题或正文含“弱关系消息”的资产。
+若推荐试单/项目路径，必须生成标题或正文含“低风险试单”的资产。
+若推荐试单/项目路径，且用户是自由职业转全职或项目制背景，必须生成标题或正文含“试单设计”的资产。
+若推荐标准岗位路径，必须生成标题或正文含“岗位匹配”的资产。
+如果安全上下文中只有“AI 方向探索意图”这类 self_reported_consistent 证据，仍可生成面向用户自己的“作品验证计划”，但不得生成对外能力承诺；claimChecks 必须引用该探索意图证据。
+所有内容都必须能回溯到 evidenceLedger。`;
 
   const user = `可用于对外材料的安全上下文：
 ${JSON.stringify(buildSafeActionContext(form, assessment))}

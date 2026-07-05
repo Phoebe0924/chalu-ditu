@@ -70,6 +70,13 @@ export type ActionAssetType =
   | "conversation_guide"
   | "interview_prep";
 
+export type ActionAssetClaimCheck = {
+  claim: string;
+  sourceEvidenceIds: string[];
+  verificationLevel: EvidenceVerificationLevel;
+  expressionBoundary: string;
+};
+
 export type CandidateProfile = {
   workExperience: string;
   nonstandardTransitions: string;
@@ -167,6 +174,7 @@ export type ActionAsset = {
   purpose: string;
   content: string;
   sourceEvidenceIds: string[];
+  claimChecks: ActionAssetClaimCheck[];
   guardrails: string[];
   status: "draft" | "approved";
   createdAt: string;

@@ -20,6 +20,22 @@ const VERIFICATION_LABELS: Record<EvidenceVerificationLevel, string> = {
   self_reported_isolated: "自述—孤证",
 };
 
+const VERIFICATION_STRENGTH: Record<EvidenceVerificationLevel, number> = {
+  self_reported_isolated: 0,
+  self_reported_consistent: 1,
+  verified: 2,
+};
+
+const FORBIDDEN_OUTWARD_PHRASES = [
+  "商业成功",
+  "成功创业者",
+  "增长专家",
+  "资深产品经理",
+  "AI 专家",
+  "工作流专家",
+  "显著降本",
+];
+
 function isOpportunityPath(value: unknown): value is OpportunityPath {
   return OPPORTUNITY_PATHS.includes(value as OpportunityPath);
 }
@@ -91,7 +107,8 @@ export function validateAssets(
   const usableEvidence = assessment.evidenceLedger.filter(
     (item) => item.verificationLevel !== "self_reported_isolated",
   );
-  const evidenceIds = new Set(usableEvidence.map((item) => item.id));
+  const evidenceById = new Map(usableEvidence.map((item) => [item.id, item]));
+  const evidenceIds = new Set(evidenceById.keys());
   return value.map((asset) => {
     if (
       !asset.type ||
@@ -103,11 +120,45 @@ export function validateAssets(
       !asset.content ||
       !Array.isArray(asset.sourceEvidenceIds) ||
       asset.sourceEvidenceIds.length === 0 ||
+      !Array.isArray(asset.claimChecks) ||
+      asset.claimChecks.length === 0 ||
       !Array.isArray(asset.guardrails) ||
       asset.sourceEvidenceIds.some((id) => !evidenceIds.has(id))
     ) {
       throw new Error("行动资产缺少字段或引用了不存在的证据。");
     }
+
+    const content = asset.content;
+    if (FORBIDDEN_OUTWARD_PHRASES.some((phrase) => content.includes(phrase))) {
+      throw new Error("行动资产正文包含高风险正向身份或成果标签。");
+    }
+
+    for (const claimCheck of asset.claimChecks) {
+      if (
+        !claimCheck.claim?.trim() ||
+        !claimCheck.expressionBoundary?.trim() ||
+        !Array.isArray(claimCheck.sourceEvidenceIds) ||
+        claimCheck.sourceEvidenceIds.length === 0 ||
+        !VERIFICATION_LEVELS.includes(claimCheck.verificationLevel) ||
+        claimCheck.sourceEvidenceIds.some(
+          (id) => !evidenceIds.has(id) || !asset.sourceEvidenceIds?.includes(id),
+        )
+      ) {
+        throw new Error("行动资产的主张核查缺少证据、边界或引用了未声明证据。");
+      }
+
+      const weakestLevel = claimCheck.sourceEvidenceIds
+        .map((id) => evidenceById.get(id)?.verificationLevel)
+        .filter((level): level is EvidenceVerificationLevel => Boolean(level))
+        .sort(
+          (a, b) => VERIFICATION_STRENGTH[a] - VERIFICATION_STRENGTH[b],
+        )[0];
+
+      if (!weakestLevel || claimCheck.verificationLevel !== weakestLevel) {
+        throw new Error("行动资产的主张验证等级未按最低证据等级保守标注。");
+      }
+    }
+
     const referencesSelfReported = asset.sourceEvidenceIds.some(
       (id) =>
         usableEvidence.find((item) => item.id === id)?.verificationLevel ===
@@ -182,7 +233,12 @@ export function assessmentToMarkdown(
   const assetMarkdown = assets
     .map(
       (asset) =>
-        `### ${asset.title}\n\n${asset.content}\n\n> 证据引用：${asset.sourceEvidenceIds.join("、")}；使用边界：${asset.guardrails.join("；")}`,
+        `### ${asset.title}\n\n${asset.content}\n\n**主张核查：**\n${(asset.claimChecks ?? [])
+          .map(
+            (check) =>
+              `- ${check.claim}｜证据：${check.sourceEvidenceIds.join("、")}｜等级：${check.verificationLevel}｜边界：${check.expressionBoundary}`,
+          )
+          .join("\n") || "- 尚未生成主张核查。"}\n\n> 证据引用：${asset.sourceEvidenceIds.join("、")}；使用边界：${asset.guardrails.join("；")}`,
     )
     .join("\n\n");
 
