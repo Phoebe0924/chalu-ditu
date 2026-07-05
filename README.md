@@ -1,6 +1,6 @@
-# 非标机会生成器（Internal V0.1）
+# 岔路地图（Internal V0.1）
 
-面向测试者和 AI agent 的内部验证原型。它不是传统求职工具，也不是面试外挂；它帮助非标履历用户把事实、证据、机会路径和真实行动连成一个可校准的工作台。
+面向测试者和 AI agent 的内部验证原型。它不是传统求职工具，也不是面试外挂；它帮助非标履历用户把事实、证据、路径和真实行动连成一个可校准的工作台。
 
 - 在线试用：[nonstandard-opportunity-generator.vercel.app](https://nonstandard-opportunity-generator.vercel.app)
 - Agent 测试说明：[AGENT_TESTING.md](./AGENT_TESTING.md)
@@ -15,7 +15,7 @@
 ```text
 理解自己
 → 识别可证明价值与边界
-→ 判断更适合哪条机会路径
+→ 判断更适合哪条路径
 → 找到具体对象
 → 生成可编辑行动资产
 → 记录真实发送与反馈
@@ -34,7 +34,7 @@
 
 1. 打开在线 demo 或本地运行项目。
 2. 在“事实输入”里选择 `妈妈重返 · AI 产品运营` 样本。
-3. 点击生成结构化机会评估。
+3. 点击生成结构化路径评估。
 4. 检查六条路径是否排序合理：提案式求职 / 创始人约聊 / 作品集吸引应优先于标准岗位投递。
 5. 检查证据账本：是否区分 `verified`、`self_reported_consistent`、`self_reported_isolated`。
 6. 生成行动资产。
@@ -174,7 +174,7 @@ PLAYWRIGHT_NODE_MODULES=/path/to/node_modules node scripts/capture-screenshots.m
 - 没有岗位爬虫、自动投递、简历 PDF 解析、实时面试辅助
 - 在线 demo 会消耗项目所有者的模型 API 额度，请避免批量生成
 - `verified` 表示“用户提供了可检查材料”，不等于系统已经实际打开并核验该材料
-- 当前主要验证职业岗位、项目试单、创始人合作、弱关系引荐四类机会
+- 当前主要验证职业岗位、项目试单、创始人合作、弱关系引荐四类路径
 
 ## 提交节奏
 

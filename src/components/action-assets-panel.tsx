@@ -15,7 +15,7 @@ export function ActionAssetsPanel({ assessment, assets, onChange }: Props) {
     return (
       <section className="panel">
         <EmptyPanel
-          title="先完成机会评估"
+          title="先完成路径评估"
           description="行动材料必须建立在已确认的路径判断和证据账本上。"
         />
       </section>
@@ -27,7 +27,7 @@ export function ActionAssetsPanel({ assessment, assets, onChange }: Props) {
       <section className="panel">
         <EmptyPanel
           title="还没有行动资产"
-          description="回到机会评估页生成行动包。系统会根据推荐路径生成 3–5 份独立材料。"
+          description="回到路径评估页生成行动包。系统会根据推荐路径生成 3–5 份独立材料。"
         />
       </section>
     );

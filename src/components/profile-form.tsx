@@ -134,7 +134,7 @@ export function ProfileForm({
           <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#536c5b]">
             Opportunity context
           </p>
-          <h2 className="mt-1 text-base font-semibold">机会场景</h2>
+          <h2 className="mt-1 text-base font-semibold">路径场景</h2>
         </div>
         <div className="space-y-5 p-5 sm:p-6">
           <div>
@@ -194,7 +194,7 @@ export function ProfileForm({
           </PrimaryButton>
           {!ready && (
             <p className="text-[11px] leading-5 text-[#8a8c84]">
-              需填写工作经历、项目证据、目标方向，并选择至少一种场景。
+              需填写工作经历、项目证据、目标方向，并选择至少一种路径场景。
             </p>
           )}
         </div>

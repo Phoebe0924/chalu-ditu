@@ -239,13 +239,13 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="truncate text-sm font-semibold">非标机会生成器</h1>
+                <h1 className="truncate text-sm font-semibold">岔路地图</h1>
                 <span className="rounded-md bg-[#e4ebe4] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider text-[#536c5b]">
                   Internal V0.1
                 </span>
               </div>
               <p className="mt-0.5 truncate text-[11px] text-[#777970]">
-                找到可进入的机会路径，并用真实反馈持续校准
+                把经历翻译成路径，把路径翻译成下一步行动
               </p>
             </div>
           </div>
