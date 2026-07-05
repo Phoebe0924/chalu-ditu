@@ -6,7 +6,7 @@
 
 ## 快速入口
 
-- 在线 demo：[https://nonstandard-opportunity-generator.vercel.app](https://nonstandard-opportunity-generator.vercel.app)
+- 在线 demo：[https://chalu-ditu.vercel.app](https://chalu-ditu.vercel.app)
 - GitHub README 里有截图和本地运行说明
 - 若你只能做静态审查，请重点看：
   - `src/lib/prompts.ts`

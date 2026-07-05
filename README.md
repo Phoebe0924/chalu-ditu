@@ -2,7 +2,7 @@
 
 面向测试者和 AI agent 的内部验证原型。它不是传统求职工具，也不是面试外挂；它帮助非标履历用户把事实、证据、路径和真实行动连成一个可校准的工作台。
 
-- 在线试用：[nonstandard-opportunity-generator.vercel.app](https://nonstandard-opportunity-generator.vercel.app)
+- 在线试用：[chalu-ditu.vercel.app](https://chalu-ditu.vercel.app)
 - Agent 测试说明：[AGENT_TESTING.md](./AGENT_TESTING.md)
 - 当前形态：单用户、本地 `localStorage`、无登录、无数据库
 
