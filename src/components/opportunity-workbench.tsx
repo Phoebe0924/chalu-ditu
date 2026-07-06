@@ -6,12 +6,14 @@ import {
   ClipboardList,
   FileCheck2,
   Gauge,
+  PlayCircle,
   Receipt,
   RotateCcw,
   ShieldCheck,
   Sparkles,
   Target,
 } from "lucide-react";
+import demoWorkspaceJson from "@/lib/demo-workspace.json";
 import { useEffect, useState } from "react";
 import { ActionAssetsPanel } from "@/components/action-assets-panel";
 import { AssessmentPanel } from "@/components/assessment-panel";
@@ -289,6 +291,21 @@ export function OpportunityWorkbench({ apiConfigured, paymentUrl }: Props) {
     setError("");
   }
 
+  function loadDemoWorkspace() {
+    if (
+      !window.confirm(
+        "载入演示闭环？这是一次真实生成的完整闭环记录（目标对象与反馈为虚构示例，用于演示），会覆盖当前工作区。",
+      )
+    ) {
+      return;
+    }
+    setWorkspace(
+      structuredClone(demoWorkspaceJson) as unknown as WorkspaceData,
+    );
+    setSelectedSampleId("");
+    setError("");
+  }
+
   return (
     <main className="workspace-shell">
       <header className="workspace-header">
@@ -311,6 +328,14 @@ export function OpportunityWorkbench({ apiConfigured, paymentUrl }: Props) {
           </div>
           <div className="flex items-center gap-2">
             {markdown && <CopyButton text={markdown} label="导出 Markdown" />}
+            <button
+              type="button"
+              onClick={loadDemoWorkspace}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#d9d3c8] bg-[#fffdf8] px-3 py-2 text-xs font-medium text-[#66695f]"
+            >
+              <PlayCircle size={13} />
+              <span className="hidden sm:inline">演示闭环</span>
+            </button>
             <button
               type="button"
               onClick={reset}
