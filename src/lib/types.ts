@@ -251,7 +251,7 @@ export type WorkspaceData = {
   targets: TargetRecord[];
   actions: ActionRecord[];
   diagnoses: FeedbackDiagnosis[];
-  activeView: "input" | "assessment" | "assets" | "pipeline";
+  activeView: "input" | "assessment" | "assets" | "pipeline" | "review";
   updatedAt: string;
 };
 

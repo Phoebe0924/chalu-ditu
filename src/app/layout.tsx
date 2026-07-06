@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "岔路地图 · V0.1",
+  title: "岔路地图 · V0.2",
   description: "给非标经历的人，生成一条可行动的可能性路径。",
 };
 

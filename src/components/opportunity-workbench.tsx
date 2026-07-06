@@ -2,9 +2,11 @@
 
 import {
   AlertCircle,
+  Check,
   ClipboardList,
   FileCheck2,
   Gauge,
+  Receipt,
   RotateCcw,
   ShieldCheck,
   Sparkles,
@@ -13,9 +15,21 @@ import {
 import { useEffect, useState } from "react";
 import { ActionAssetsPanel } from "@/components/action-assets-panel";
 import { AssessmentPanel } from "@/components/assessment-panel";
+import { LoopReviewPanel } from "@/components/loop-review-panel";
 import { PipelinePanel } from "@/components/pipeline-panel";
 import { ProfileForm } from "@/components/profile-form";
 import { CopyButton, ErrorNotice } from "@/components/workspace-ui";
+import {
+  canUse,
+  createFreeEntitlement,
+  loadEntitlement,
+  recordUsage,
+  saveEntitlement,
+  USAGE_LABELS,
+  type Entitlement,
+  type UsageKind,
+} from "@/lib/entitlement";
+import { deriveLoopStages } from "@/lib/loop";
 import { REGRESSION_SAMPLES } from "@/lib/regression-samples";
 import {
   createEmptyWorkspace,
@@ -34,6 +48,7 @@ import type {
 
 type Props = {
   apiConfigured: boolean;
+  paymentUrl: string;
 };
 
 const EFFECTIVE_FEEDBACK = new Set([
@@ -51,10 +66,14 @@ const VIEWS = [
   { id: "assessment", label: "路径评估", icon: Gauge },
   { id: "assets", label: "行动资产", icon: FileCheck2 },
   { id: "pipeline", label: "目标与反馈", icon: Target },
+  { id: "review", label: "闭环复盘", icon: Receipt },
 ] as const;
 
-export function OpportunityWorkbench({ apiConfigured }: Props) {
+export function OpportunityWorkbench({ apiConfigured, paymentUrl }: Props) {
   const [workspace, setWorkspace] = useState<WorkspaceData>(createEmptyWorkspace);
+  const [entitlement, setEntitlement] = useState<Entitlement>(
+    createFreeEntitlement,
+  );
   const [hydrated, setHydrated] = useState(false);
   const [selectedSampleId, setSelectedSampleId] = useState("");
   const [loading, setLoading] = useState<"assess" | "assets" | "">("");
@@ -64,6 +83,7 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       setWorkspace(loadWorkspace());
+      setEntitlement(loadEntitlement());
       setHydrated(true);
     }, 0);
     return () => window.clearTimeout(timeout);
@@ -74,6 +94,11 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
     const timeout = window.setTimeout(() => saveWorkspace(workspace), 250);
     return () => window.clearTimeout(timeout);
   }, [hydrated, workspace]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    saveEntitlement(entitlement);
+  }, [hydrated, entitlement]);
 
   const requiredReady = Boolean(
     workspace.form.profile.workExperience.trim() &&
@@ -131,8 +156,38 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
     }
   }
 
+  function ensureQuota(kind: UsageKind): boolean {
+    if (canUse(entitlement, kind)) return true;
+    setError(
+      `本机「${USAGE_LABELS[kind]}」的免费额度已用完。去「闭环复盘」页查看用量，解锁 Pro 后可继续。`,
+    );
+    return false;
+  }
+
+  async function activateLicense(key: string) {
+    const response = await fetch("/api/license", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key }),
+    });
+    const payload = (await response.json()) as {
+      plan?: "pro";
+      error?: string;
+    };
+    if (!response.ok || payload.plan !== "pro") {
+      throw new Error(payload.error || "解锁失败，请重试。");
+    }
+    setEntitlement((current) => ({
+      ...current,
+      plan: "pro",
+      licenseKey: key,
+      unlockedAt: new Date().toISOString(),
+    }));
+  }
+
   async function assess() {
     if (!requiredReady || loading) return;
+    if (!ensureQuota("assess")) return;
     setLoading("assess");
     setError("");
     try {
@@ -145,6 +200,7 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
         error?: string;
       };
       if (!response.ok) throw new Error(payload.error || "评估失败。");
+      setEntitlement((current) => recordUsage(current, "assess"));
       patchWorkspace({
         assessment: payload.assessment,
         assets: [],
@@ -159,6 +215,7 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
 
   async function generateAssets() {
     if (!workspace.assessment || loading) return;
+    if (!ensureQuota("actionPackage")) return;
     setLoading("assets");
     setError("");
     try {
@@ -174,6 +231,7 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
         error?: string;
       };
       if (!response.ok) throw new Error(payload.error || "行动包生成失败。");
+      setEntitlement((current) => recordUsage(current, "actionPackage"));
       patchWorkspace({ assets: payload.assets, activeView: "assets" });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "行动包生成失败。");
@@ -188,6 +246,7 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
     const target = workspace.targets.find((item) => item.id === action?.targetId);
     const asset = workspace.assets.find((item) => item.id === action?.assetId);
     if (!action || !target) return;
+    if (!ensureQuota("calibrate")) return;
 
     setCalibratingActionId(actionId);
     setError("");
@@ -206,6 +265,7 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
         error?: string;
       };
       if (!response.ok) throw new Error(payload.error || "反馈校准失败。");
+      setEntitlement((current) => recordUsage(current, "calibrate"));
       patchWorkspace({
         diagnoses: [...workspace.diagnoses, payload.diagnosis],
         actions: workspace.actions.map((item) =>
@@ -241,7 +301,7 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
               <div className="flex items-center gap-2">
                 <h1 className="truncate text-sm font-semibold">岔路地图</h1>
                 <span className="rounded-md bg-[#e4ebe4] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider text-[#536c5b]">
-                  Internal V0.1
+                  MVP V0.2
                 </span>
               </div>
               <p className="mt-0.5 truncate text-[11px] text-[#777970]">
@@ -264,6 +324,39 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
       </header>
 
       <div className="mx-auto w-[min(1480px,calc(100%-32px))] py-5 max-sm:w-[calc(100%-16px)]">
+        <section className="panel mb-5 overflow-x-auto">
+          <div className="flex min-w-fit items-center gap-1 px-4 py-3">
+            {deriveLoopStages(workspace).map((stage, index, all) => (
+              <div key={stage.id} className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => patchWorkspace({ activeView: stage.view })}
+                  title={stage.detail}
+                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-1.5 text-[11px] font-semibold transition ${
+                    stage.done
+                      ? "text-[#46604f]"
+                      : "text-[#8a8c84] hover:text-[#55584f]"
+                  }`}
+                >
+                  <span
+                    className={`flex h-4.5 w-4.5 items-center justify-center rounded-full text-[9px] ${
+                      stage.done
+                        ? "bg-[#46604f] text-[#fffdf8]"
+                        : "border border-[#d0c8bc]"
+                    }`}
+                  >
+                    {stage.done ? <Check size={10} /> : index + 1}
+                  </span>
+                  {stage.label}
+                </button>
+                {index < all.length - 1 && (
+                  <span className="h-px w-3 shrink-0 bg-[#d9d3c8]" />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="mb-5 grid gap-3 sm:grid-cols-3">
           <SprintMetric label="研究目标" value={workspace.targets.length} goal={10} />
           <SprintMetric label="真实发送" value={sentCount} goal={6} />
@@ -333,6 +426,15 @@ export function OpportunityWorkbench({ apiConfigured }: Props) {
               assessment={workspace.assessment}
               assets={workspace.assets}
               onChange={(assets) => patchWorkspace({ assets })}
+            />
+          )}
+          {workspace.activeView === "review" && (
+            <LoopReviewPanel
+              workspace={workspace}
+              entitlement={entitlement}
+              paymentUrl={paymentUrl}
+              onNavigate={(view) => patchWorkspace({ activeView: view })}
+              onActivateLicense={activateLicense}
             />
           )}
           {workspace.activeView === "pipeline" && (

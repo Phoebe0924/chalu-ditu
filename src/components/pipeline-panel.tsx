@@ -11,7 +11,7 @@ import {
   type FeedbackDiagnosis,
   type TargetRecord,
 } from "@/lib/types";
-import { EmptyPanel, PrimaryButton } from "@/components/workspace-ui";
+import { CopyButton, EmptyPanel, PrimaryButton } from "@/components/workspace-ui";
 
 type Props = {
   assets: ActionAsset[];
@@ -322,6 +322,10 @@ export function PipelinePanel({
                               {action.id}
                             </p>
                           </div>
+                          <CopyButton
+                            text={action.contentSnapshot}
+                            label="复制发送内容"
+                          />
                           <select
                             value={action.status}
                             onChange={(event) => {
