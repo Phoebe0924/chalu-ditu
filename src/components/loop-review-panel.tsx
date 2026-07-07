@@ -51,6 +51,7 @@ export function LoopReviewPanel({
   const firstOpen = stages.find((stage) => !stage.done);
 
   const reviewMarkdown = buildReviewMarkdown(receipt, stages);
+  const postDraft = buildPostDraft(receipt);
 
   return (
     <div className="space-y-5">
@@ -69,9 +70,14 @@ export function LoopReviewPanel({
               </span>
             )}
           </div>
-          {receipt.loopClosed && (
-            <CopyButton text={reviewMarkdown} label="复制闭环报告" />
-          )}
+          <div className="flex items-center gap-2">
+            {receipt.evidenceTotal > 0 && (
+              <CopyButton text={postDraft} label="复制过程帖草稿" />
+            )}
+            {receipt.loopClosed && (
+              <CopyButton text={reviewMarkdown} label="复制闭环报告" />
+            )}
+          </div>
         </div>
         <div className="p-5 sm:p-6">
           <ol className="space-y-3">
@@ -353,6 +359,28 @@ function ReceiptStat({
       <p className="mt-1 text-[10px] leading-4 text-[#8a8c84]">{note}</p>
     </div>
   );
+}
+
+function buildPostDraft(receipt: ReturnType<typeof deriveLoopReceipt>): string {
+  const lines = [
+    "用自己做的工具找机会 · 真实进度",
+    "",
+    "我在用「岔路地图」推进自己的求职/合作闭环，规则是不伪造经历：每句对外的话都要能回溯到证据。本周的真实数字：",
+    "",
+    `· 证据账本 ${receipt.evidenceTotal} 条（可核验 ${receipt.evidenceVerified} / 自述一致 ${receipt.evidenceConsistent} / 孤证 ${receipt.evidenceIsolated}，孤证被系统挡在对外文案之外）`,
+    `· 已确认行动资产 ${receipt.assetsApproved} 份，主张核查 ${receipt.claimChecksTotal} 条`,
+    `· 目标对象 ${receipt.targetsTotal} 个 · 真实发送 ${receipt.sentTotal} 次 · 记录反馈 ${receipt.feedbackTotal} 条 · 校准 ${receipt.diagnosesTotal} 次`,
+  ];
+  if (receipt.latestNextAction) {
+    lines.push("", `系统根据真实反馈给我的下一步：${receipt.latestNextAction}`);
+  }
+  lines.push(
+    "",
+    "[这里补一段本周的真实感受或卡点，一两句就够]",
+    "",
+    "过程持续公开。工具地址见评论区。",
+  );
+  return lines.join("\n");
 }
 
 function buildReviewMarkdown(
