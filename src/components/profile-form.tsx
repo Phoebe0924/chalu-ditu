@@ -83,24 +83,22 @@ export function ProfileForm({
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
-      <section className="panel overflow-hidden">
-        <div className="border-b border-[#e2ddd3] bg-[#faf7f1] px-5 py-4 sm:px-6">
-          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9e4d35]">
-            Truth dossier
-          </p>
-          <h2 className="mt-1 text-base font-semibold">候选人事实底稿</h2>
-          <p className="mt-1.5 text-xs leading-5 text-[#777970]">
-            系统只允许从这里的事实和证据生成价值主张。
-          </p>
+    <div style={{ display: "grid", gap: 20, gridTemplateColumns: "1fr 0.9fr" }}>
+      {/* Left: Truth Dossier */}
+      <section className="panel" style={{ overflow: "hidden" }}>
+        <div className="section-header">
+          <div>
+            <div className="section-header-kicker">Truth dossier</div>
+            <h2 className="section-header-title">候选人事实底稿</h2>
+          </div>
         </div>
-        <div className="space-y-5 p-5 sm:p-6">
+        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
           <label className="block">
             <span className="field-label">加载回归样本</span>
             <select
               value={selectedSampleId}
               onChange={(event) => onSelectSample(event.target.value)}
-              className="text-field px-3.5 py-3 text-sm"
+              className="text-field"
             >
               <option value="">不加载样本</option>
               {samples.map((sample) => (
@@ -113,35 +111,36 @@ export function ProfileForm({
 
           {PROFILE_FIELDS.map(([key, label, hint, required]) => (
             <label key={key} className="block">
-              <span className="field-label">
+              <span className="field-label field-label--dark">
                 {label}
-                {required && <span className="ml-1 text-[#9e4d35]">*</span>}
+                {required && <span style={{ color: "var(--clay)", marginLeft: 4 }}>*</span>}
                 <span className="field-hint"> · {hint}</span>
               </span>
               <textarea
                 value={form.profile[key]}
                 onChange={(event) => updateProfile(key, event.target.value)}
                 rows={key === "workExperience" || key === "projectsAndEvidence" ? 4 : 3}
-                className="text-field px-3.5 py-3 text-sm"
+                className="text-field"
               />
             </label>
           ))}
         </div>
       </section>
 
-      <section className="panel h-fit overflow-hidden lg:sticky lg:top-[82px]">
-        <div className="border-b border-[#e2ddd3] bg-[#faf7f1] px-5 py-4 sm:px-6">
-          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#536c5b]">
-            Opportunity context
-          </p>
-          <h2 className="mt-1 text-base font-semibold">路径场景</h2>
+      {/* Right: Scenario */}
+      <section className="panel" style={{ overflow: "hidden", alignSelf: "start", position: "sticky", top: 32 }}>
+        <div className="section-header">
+          <div>
+            <div className="section-header-kicker" style={{ color: "var(--sage)" }}>Opportunity context</div>
+            <h2 className="section-header-title">路径场景</h2>
+          </div>
         </div>
-        <div className="space-y-5 p-5 sm:p-6">
+        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
           <div>
             <span className="field-label">
-              选择场景<span className="ml-1 text-[#9e4d35]">*</span>
+              选择场景<span style={{ color: "var(--clay)", marginLeft: 4 }}>*</span>
             </span>
-            <div className="grid gap-2">
+            <div style={{ display: "grid", gap: 8 }}>
               {SCENARIO_OPTIONS.map((option) => {
                 const selected = form.scenario.types.includes(option);
                 return (
@@ -149,20 +148,37 @@ export function ProfileForm({
                     key={option}
                     type="button"
                     onClick={() => toggleScenario(option)}
-                    className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs transition ${
-                      selected
-                        ? "border-[#aa6048] bg-[#f6e8e0] text-[#713523]"
-                        : "border-[#ded9ce] bg-[#fffdf8] text-[#65685f]"
-                    }`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      borderRadius: "var(--radius-md)",
+                      border: `1px solid ${selected ? "var(--clay)" : "var(--line)"}`,
+                      background: selected ? "var(--clay-light)" : "var(--paper)",
+                      padding: "8px 12px",
+                      textAlign: "left",
+                      fontSize: 13,
+                      color: selected ? "var(--clay-dark)" : "var(--ink-soft)",
+                      cursor: "pointer",
+                      transition: "all 120ms ease",
+                    }}
                   >
                     <span
-                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                        selected
-                          ? "border-[#9e4d35] bg-[#9e4d35] text-white"
-                          : "border-[#c9c3b8]"
-                      }`}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: 3,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: `1px solid ${selected ? "var(--clay)" : "var(--line-heavy)"}`,
+                        background: selected ? "var(--clay)" : "transparent",
+                        color: selected ? "white" : "transparent",
+                        flexShrink: 0,
+                        fontSize: 10,
+                      }}
                     >
-                      {selected && <Check size={11} />}
+                      {selected && <Check size={10} />}
                     </span>
                     {option}
                   </button>
@@ -180,7 +196,7 @@ export function ProfileForm({
                 value={form.scenario[key]}
                 onChange={(event) => updateScenario(key, event.target.value)}
                 rows={3}
-                className="text-field px-3.5 py-3 text-sm"
+                className="text-field"
               />
             </label>
           ))}
@@ -193,7 +209,7 @@ export function ProfileForm({
             {loading ? "正在评估六条路径" : "生成结构化机会评估"}
           </PrimaryButton>
           {!ready && (
-            <p className="text-[11px] leading-5 text-[#8a8c84]">
+            <p style={{ fontSize: 11, lineHeight: 1.5, color: "var(--ink-muted)" }}>
               需填写工作经历、项目证据、目标方向，并选择至少一种路径场景。
             </p>
           )}
