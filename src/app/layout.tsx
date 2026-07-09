@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Noto_Serif_SC, Zen_Old_Mincho } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -11,18 +10,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const notoSerif = Noto_Serif_SC({
-  variable: "--font-noto-serif",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-});
-
-const zenOldMincho = Zen_Old_Mincho({
-  variable: "--font-zen-mincho",
-  subsets: ["latin"],
-  weight: ["500", "700", "900"],
 });
 
 export const metadata: Metadata = {
@@ -38,8 +25,14 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} ${zenOldMincho.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Zen+Old+Mincho:wght@500;700;900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

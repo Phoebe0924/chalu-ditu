@@ -3,8 +3,8 @@
 @theme inline {
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --font-serif: "Noto Serif SC", "Georgia", serif;
-  --font-display: "Zen Old Mincho", "Noto Serif SC", serif;
+  --font-serif: "Noto Serif SC", "Georgia", "Times New Roman", serif;
+  --font-display: "Zen Old Mincho", "Noto Serif SC", "Georgia", serif;
 }
 
 :root {
