@@ -54,58 +54,64 @@ export function LoopReviewPanel({
   const postDraft = buildPostDraft(receipt);
 
   return (
-    <div className="space-y-5">
-      <section className="panel overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e2ddd3] bg-[#faf7f1] px-5 py-4 sm:px-6">
-          <div className="flex items-center gap-2">
-            <Receipt size={16} className="text-[#9e4d35]" />
-            <h2 className="text-base font-semibold">本次闭环复盘</h2>
-            {receipt.loopClosed ? (
-              <span className="rounded-md bg-[#e4ebe4] px-1.5 py-0.5 text-[10px] font-semibold text-[#46604f]">
-                闭环已跑通
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Loop Review */}
+      <section className="panel" style={{ overflow: "hidden" }}>
+        <div className="section-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Receipt size={16} style={{ color: "var(--clay)" }} />
+              <h2 className="section-header-title">本次闭环复盘</h2>
+              <span className={`tag ${receipt.loopClosed ? "tag--verified" : "tag--consistent"}`}>
+                {receipt.loopClosed ? "闭环已跑通" : "闭环进行中"}
               </span>
-            ) : (
-              <span className="rounded-md bg-[#f3e9dc] px-1.5 py-0.5 text-[10px] font-semibold text-[#8a6b3f]">
-                闭环进行中
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {receipt.evidenceTotal > 0 && (
-              <CopyButton text={postDraft} label="复制过程帖草稿" />
-            )}
-            {receipt.loopClosed && (
-              <CopyButton text={reviewMarkdown} label="复制闭环报告" />
-            )}
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {receipt.evidenceTotal > 0 && (
+                <CopyButton text={postDraft} label="复制过程帖草稿" />
+              )}
+              {receipt.loopClosed && (
+                <CopyButton text={reviewMarkdown} label="复制闭环报告" />
+              )}
+            </div>
           </div>
         </div>
-        <div className="p-5 sm:p-6">
-          <ol className="space-y-3">
+        <div style={{ padding: "16px 24px" }}>
+          <ol style={{ display: "flex", flexDirection: "column", gap: 10, listStyle: "none", padding: 0 }}>
             {stages.map((stage, index) => (
-              <li key={stage.id} className="flex items-start gap-3">
-                <span
-                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
-                    stage.done
-                      ? "bg-[#46604f] text-[#fffdf8]"
-                      : "border border-[#d0c8bc] text-[#8a8c84]"
-                  }`}
-                >
-                  {stage.done ? <Check size={13} /> : index + 1}
+              <li key={stage.id} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <span style={{
+                  marginTop: 2,
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                  background: stage.done ? "var(--sage)" : "transparent",
+                  border: stage.done ? "none" : "1.5px solid var(--line)",
+                  color: stage.done ? "white" : "var(--ink-muted)",
+                }}>
+                  {stage.done ? <Check size={12} /> : index + 1}
                 </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-xs font-semibold">{stage.label}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600 }}>{stage.label}</p>
                     {!stage.done && stage === firstOpen && (
                       <button
                         type="button"
                         onClick={() => onNavigate(stage.view)}
-                        className="inline-flex items-center gap-1 rounded-md bg-[#f3e9dc] px-2 py-0.5 text-[10px] font-semibold text-[#8a6b3f]"
+                        className="btn btn-ghost"
+                        style={{ fontSize: 10, padding: "2px 8px", background: "var(--paper-raised)" }}
                       >
-                        去完成 <ArrowRight size={11} />
+                        去完成 <ArrowRight size={10} />
                       </button>
                     )}
                   </div>
-                  <p className="mt-0.5 text-[11px] leading-5 text-[#777970]">
+                  <p style={{ marginTop: 2, fontSize: 12, lineHeight: 1.5, color: "var(--ink-soft)" }}>
                     {stage.detail}
                   </p>
                 </div>
@@ -115,79 +121,43 @@ export function LoopReviewPanel({
         </div>
       </section>
 
-      <section className="panel overflow-hidden">
-        <div className="border-b border-[#e2ddd3] bg-[#faf7f1] px-5 py-4 sm:px-6">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={16} className="text-[#9e4d35]" />
-            <h2 className="text-base font-semibold">价值账单（全部来自真实记录）</h2>
+      {/* Value Bill */}
+      <section className="panel" style={{ overflow: "hidden" }}>
+        <div className="section-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ShieldCheck size={16} style={{ color: "var(--clay)" }} />
+            <div>
+              <h2 className="section-header-title">价值账单（全部来自真实记录）</h2>
+              <p className="section-header-desc">
+                每个数字都能回溯到你输入的事实、系统生成的资产和你记录的真实行动。
+              </p>
+            </div>
           </div>
-          <p className="mt-1 text-xs text-[#777970]">
-            每个数字都能回溯到你输入的事实、系统生成的资产和你记录的真实行动。
-          </p>
         </div>
-        <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
-          <ReceiptStat
-            label="证据账本条目"
-            value={`${receipt.evidenceTotal}`}
-            note={`可核验 ${receipt.evidenceVerified} · 自述一致 ${receipt.evidenceConsistent} · 孤证 ${receipt.evidenceIsolated}`}
-          />
-          <ReceiptStat
-            label="孤证被挡在对外文案之外"
-            value={`${receipt.evidenceIsolated}`}
-            note="不伪造经历：孤证不进入行动资产"
-          />
-          <ReceiptStat
-            label="可发送行动资产"
-            value={`${receipt.assetsApproved}/${receipt.assetsTotal}`}
-            note={`共 ${receipt.claimChecksTotal} 条主张核查，逐条可回溯`}
-          />
-          <ReceiptStat
-            label="输入到行动包"
-            value={
-              receipt.minutesToActionPackage !== null
-                ? `${receipt.minutesToActionPackage} 分钟`
-                : "—"
-            }
-            note="从填写事实到拿到可编辑材料"
-          />
-          <ReceiptStat
-            label="目标对象"
-            value={`${receipt.targetsTotal}`}
-            note="有名字、有联系理由、有问题假设"
-          />
-          <ReceiptStat
-            label="真实发送"
-            value={`${receipt.sentTotal}`}
-            note="系统不自动发送，每次都是你按下的"
-          />
-          <ReceiptStat
-            label="记录反馈"
-            value={`${receipt.feedbackTotal}`}
-            note="包括没有回复——沉默也是数据"
-          />
-          <ReceiptStat
-            label="反馈校准"
-            value={`${receipt.diagnosesTotal}`}
-            note="定位失败层级，只给一个下一步"
-          />
+        <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(4, 1fr)", padding: "16px 20px" }}>
+          <ReceiptStat label="证据账本条目" value={`${receipt.evidenceTotal}`} note={`可核验 ${receipt.evidenceVerified} · 自述一致 ${receipt.evidenceConsistent} · 孤证 ${receipt.evidenceIsolated}`} />
+          <ReceiptStat label="孤证被挡在对外文案之外" value={`${receipt.evidenceIsolated}`} note="不伪造经历：孤证不进入行动资产" />
+          <ReceiptStat label="可发送行动资产" value={`${receipt.assetsApproved}/${receipt.assetsTotal}`} note={`共 ${receipt.claimChecksTotal} 条主张核查，逐条可回溯`} />
+          <ReceiptStat label="输入到行动包" value={receipt.minutesToActionPackage !== null ? `${receipt.minutesToActionPackage} 分钟` : "—"} note="从填写事实到拿到可编辑材料" />
+          <ReceiptStat label="目标对象" value={`${receipt.targetsTotal}`} note="有名字、有联系理由、有问题假设" />
+          <ReceiptStat label="真实发送" value={`${receipt.sentTotal}`} note="系统不自动发送，每次都是你按下的" />
+          <ReceiptStat label="记录反馈" value={`${receipt.feedbackTotal}`} note="包括没有回复——沉默也是数据" />
+          <ReceiptStat label="反馈校准" value={`${receipt.diagnosesTotal}`} note="定位失败层级，只给一个下一步" />
         </div>
         {receipt.latestNextAction && (
-          <div className="border-t border-[#e2ddd3] px-5 py-4 sm:px-6">
-            <p className="text-[11px] font-semibold text-[#777970]">
-              最新校准结论
+          <div style={{ borderTop: "1px solid var(--line-light)", padding: "14px 20px" }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-muted)" }}>最新校准结论</p>
+            <p style={{ marginTop: 4, fontSize: 13, lineHeight: 1.6 }}>
+              {FAILURE_LAYER_LABELS[receipt.latestDiagnosisLayer] ?? receipt.latestDiagnosisLayer}
             </p>
-            <p className="mt-1 text-xs leading-6">
-              {FAILURE_LAYER_LABELS[receipt.latestDiagnosisLayer] ??
-                receipt.latestDiagnosisLayer}
-            </p>
-            <p className="mt-1 text-xs leading-6">
-              <strong>下一步：</strong>
-              {receipt.latestNextAction}
+            <p style={{ marginTop: 2, fontSize: 13, lineHeight: 1.6 }}>
+              <strong>下一步：</strong>{receipt.latestNextAction}
             </p>
           </div>
         )}
       </section>
 
+      {/* Upgrade Section */}
       <UpgradeSection
         entitlement={entitlement}
         paymentUrl={paymentUrl}
@@ -221,9 +191,7 @@ function UpgradeSection({
       await onActivateLicense(key.trim());
       setKey("");
     } catch (caught) {
-      setLicenseError(
-        caught instanceof Error ? caught.message : "解锁失败，请重试。",
-      );
+      setLicenseError(caught instanceof Error ? caught.message : "解锁失败，请重试。");
     } finally {
       setActivating(false);
     }
@@ -231,12 +199,12 @@ function UpgradeSection({
 
   if (entitlement.plan === "pro") {
     return (
-      <section className="panel p-5 sm:p-6">
-        <div className="flex items-center gap-2">
-          <BadgeCheck size={16} className="text-[#46604f]" />
-          <h2 className="text-base font-semibold">Pro 已解锁</h2>
+      <section className="panel" style={{ padding: "20px 24px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <BadgeCheck size={16} style={{ color: "var(--sage)" }} />
+          <h2 className="section-header-title">Pro 已解锁</h2>
         </div>
-        <p className="mt-2 text-xs leading-6 text-[#66695f]">
+        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: "var(--ink-soft)" }}>
           本机额度限制已解除：路径评估、行动包生成、反馈校准不限次数。感谢你为一个诚实的工具付费。
         </p>
       </section>
@@ -244,94 +212,98 @@ function UpgradeSection({
   }
 
   return (
-    <section className="panel overflow-hidden">
-      <div className="border-b border-[#e2ddd3] bg-[#faf7f1] px-5 py-4 sm:px-6">
-        <h2 className="text-base font-semibold">为什么值得付费</h2>
-        <p className="mt-1 text-xs leading-5 text-[#777970]">
-          {loopClosed
-            ? "你刚刚跑完一次完整闭环：不是拿到一份报告，而是完成了一次真实机会推进，并且知道了下一步。"
-            : "免费额度足够跑通第一个完整闭环。跑通后你会知道这个工具是否值得为第二个、第三个目标付费。"}
-        </p>
-      </div>
-      <div className="grid gap-5 p-5 sm:p-6 md:grid-cols-2">
+    <section className="panel" style={{ overflow: "hidden" }}>
+      <div className="section-header">
         <div>
-          <p className="text-xs font-semibold text-[#66695f]">免费额度用量（本机）</p>
-          <div className="mt-3 space-y-3">
+          <h2 className="section-header-title">为什么值得付费</h2>
+          <p className="section-header-desc">
+            {loopClosed
+              ? "你刚刚跑完一次完整闭环：不是拿到一份报告，而是完成了一次真实机会推进，并且知道了下一步。"
+              : "免费额度足够跑通第一个完整闭环。跑通后你会知道这个工具是否值得为第二个、第三个目标付费。"}
+          </p>
+        </div>
+      </div>
+      <div style={{ display: "grid", gap: 20, gridTemplateColumns: "1fr 1fr", padding: "20px 24px" }}>
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-soft)" }}>免费额度用量（本机）</p>
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 12 }}>
             {(Object.keys(FREE_QUOTA) as UsageKind[]).map((kind) => {
               const used = entitlement.usage[kind];
               const limit = FREE_QUOTA[kind];
               return (
                 <div key={kind}>
-                  <div className="flex items-center justify-between text-[11px]">
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                     <span>{USAGE_LABELS[kind]}</span>
-                    <span className="font-mono font-semibold">
-                      {used}/{limit}
-                    </span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600 }}>{used}/{limit}</span>
                   </div>
-                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#e8e3da]">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        used >= limit ? "bg-[#9e4d35]" : "bg-[#536c5b]"
-                      }`}
-                      style={{
-                        width: `${Math.min(100, Math.round((used / limit) * 100))}%`,
-                      }}
-                    />
+                  <div style={{ marginTop: 4, height: 4, borderRadius: 99, background: "var(--line-light)", overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%",
+                      borderRadius: 99,
+                      background: used >= limit ? "var(--danger)" : "var(--sage)",
+                      width: `${Math.min(100, Math.round((used / limit) * 100))}%`,
+                      transition: "width 400ms ease",
+                    }} />
                   </div>
                 </div>
               );
             })}
           </div>
-          <ul className="mt-4 space-y-1.5 text-[11px] leading-5 text-[#66695f]">
-            <li className="flex items-start gap-1.5">
-              <Check size={12} className="mt-0.5 shrink-0 text-[#46604f]" />
+          <ul style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 6, listStyle: "none", padding: 0, fontSize: 12, lineHeight: 1.5, color: "var(--ink-soft)" }}>
+            <li style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+              <Check size={12} style={{ marginTop: 2, flexShrink: 0, color: "var(--sage)" }} />
               Pro 解除本机全部额度限制，可并行推进多个目标
             </li>
-            <li className="flex items-start gap-1.5">
-              <Check size={12} className="mt-0.5 shrink-0 text-[#46604f]" />
+            <li style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+              <Check size={12} style={{ marginTop: 2, flexShrink: 0, color: "var(--sage)" }} />
               真实性护栏不变：孤证排除、主张核查、不自动发送
             </li>
-            <li className="flex items-start gap-1.5">
-              <CircleDashed size={12} className="mt-0.5 shrink-0 text-[#8a8c84]" />
+            <li style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+              <CircleDashed size={12} style={{ marginTop: 2, flexShrink: 0, color: "var(--ink-muted)" }} />
               内测阶段：暂无自动支付，付款后 24 小时内人工发放解锁码
             </li>
           </ul>
         </div>
-        <div className="rounded-xl border border-[#e2ddd3] bg-[#fffdf8] p-4">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight">¥49</span>
-            <span className="text-[11px] text-[#777970]">
-              内测早鸟 · 一次性买断本机 Pro
-            </span>
+        <div style={{
+          borderRadius: "var(--radius-md)",
+          border: "1px solid var(--line-light)",
+          background: "white",
+          padding: "16px 20px",
+        }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", fontFamily: "var(--font-display)" }}>¥49</span>
+            <span style={{ fontSize: 12, color: "var(--ink-muted)" }}>内测早鸟 · 一次性买断本机 Pro</span>
           </div>
           {paymentUrl ? (
             <a
               href={paymentUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#252822] px-4 py-3 text-sm font-semibold text-[#fffdf8] transition hover:bg-[#373a33]"
+              className="btn btn-primary"
+              style={{ marginTop: 12, width: "100%", justifyContent: "center", padding: "10px 20px" }}
             >
               去付款并获取解锁码 <ArrowRight size={14} />
             </a>
           ) : (
-            <p className="mt-3 rounded-lg bg-[#f8f5ee] p-3 text-[11px] leading-5 text-[#66695f]">
+            <p style={{ marginTop: 12, borderRadius: "var(--radius-sm)", background: "var(--paper-raised)", padding: "10px 12px", fontSize: 12, lineHeight: 1.5, color: "var(--ink-soft)" }}>
               支付链接尚未配置。当前通过人工渠道收款并发放解锁码——联系产品作者获取。
             </p>
           )}
-          <div className="mt-4 border-t border-[#eee9df] pt-4">
+          <div style={{ marginTop: 16, borderTop: "1px solid var(--line-light)", paddingTop: 16 }}>
             <label className="block">
               <span className="field-label">已有解锁码？</span>
               <input
                 value={key}
-                onChange={(event) => setKey(event.target.value)}
+                onChange={(e) => setKey(e.target.value)}
                 placeholder="CLD1.xxxx.xxxx"
-                className="text-field px-3.5 py-3 font-mono text-xs"
+                className="text-field"
+                style={{ fontSize: 12, fontFamily: "var(--font-mono)" }}
               />
             </label>
             {licenseError && (
-              <p className="mt-2 text-[11px] text-[#8f392d]">{licenseError}</p>
+              <p style={{ marginTop: 6, fontSize: 12, color: "var(--danger)" }}>{licenseError}</p>
             )}
-            <div className="mt-3">
+            <div style={{ marginTop: 10 }}>
               <PrimaryButton onClick={activate} loading={activating}>
                 <KeyRound size={14} /> 验证并解锁 Pro
               </PrimaryButton>
@@ -343,20 +315,12 @@ function UpgradeSection({
   );
 }
 
-function ReceiptStat({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: string;
-  note: string;
-}) {
+function ReceiptStat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="rounded-xl bg-[#f8f5ee] p-3.5">
-      <p className="text-[11px] font-semibold text-[#777970]">{label}</p>
-      <p className="mt-1 font-mono text-xl font-bold tracking-tight">{value}</p>
-      <p className="mt-1 text-[10px] leading-4 text-[#8a8c84]">{note}</p>
+    <div style={{ borderRadius: "var(--radius-md)", background: "var(--paper-raised)", padding: "12px 14px" }}>
+      <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-muted)" }}>{label}</p>
+      <p style={{ marginTop: 4, fontSize: 22, fontWeight: 700, fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}>{value}</p>
+      <p style={{ marginTop: 4, fontSize: 10, lineHeight: 1.4, color: "var(--ink-muted)" }}>{note}</p>
     </div>
   );
 }
@@ -391,9 +355,7 @@ function buildReviewMarkdown(
     "# 岔路地图 · 闭环复盘",
     "",
     "## 闭环链条",
-    ...stages.map(
-      (stage) => `- [${stage.done ? "x" : " "}] ${stage.label}：${stage.detail}`,
-    ),
+    ...stages.map((s) => `- [${s.done ? "x" : " "}] ${s.label}：${s.detail}`),
     "",
     "## 价值账单",
     `- 证据账本：${receipt.evidenceTotal} 条（可核验 ${receipt.evidenceVerified} / 自述一致 ${receipt.evidenceConsistent} / 孤证 ${receipt.evidenceIsolated}）`,

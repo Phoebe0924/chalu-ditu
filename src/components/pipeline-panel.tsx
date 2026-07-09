@@ -154,75 +154,42 @@ export function PipelinePanel({
   }
 
   return (
-    <div className="space-y-5">
-      <section className="panel overflow-hidden">
-        <div className="border-b border-[#e2ddd3] bg-[#faf7f1] px-5 py-4 sm:px-6">
-          <div className="flex items-center gap-2">
-            <Target size={16} className="text-[#9e4d35]" />
-            <h2 className="text-base font-semibold">新增目标对象</h2>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* New Target Form */}
+      <section className="panel" style={{ overflow: "hidden" }}>
+        <div className="section-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Target size={15} style={{ color: "var(--clay)" }} />
+            <div>
+              <h2 className="section-header-title">新增目标对象</h2>
+              <p className="section-header-desc">
+                首轮目标：研究 10 人，个性化发送 6 次。系统不会代替你发送。
+              </p>
+            </div>
           </div>
-          <p className="mt-1 text-xs text-[#777970]">
-            首轮目标：研究 10 人，个性化发送 6 次。系统不会代替你发送。
-          </p>
         </div>
-        <div className="grid gap-4 p-5 md:grid-cols-2 sm:p-6">
-          <TargetInput
-            label="对象姓名 *"
-            value={draft.name}
-            onChange={(value) => setDraft({ ...draft, name: value })}
-          />
-          <TargetInput
-            label="公司 *"
-            value={draft.company}
-            onChange={(value) => setDraft({ ...draft, company: value })}
-          />
-          <TargetInput
-            label="角色"
-            value={draft.role}
-            onChange={(value) => setDraft({ ...draft, role: value })}
-          />
-          <TargetInput
-            label="联系渠道"
-            value={draft.channel}
-            onChange={(value) => setDraft({ ...draft, channel: value })}
-          />
-          <TargetTextarea
-            label="具体联系理由 *"
-            value={draft.contactReason}
-            onChange={(value) => setDraft({ ...draft, contactReason: value })}
-          />
-          <TargetTextarea
-            label="问题假设 *"
-            value={draft.problemHypothesis}
-            onChange={(value) =>
-              setDraft({ ...draft, problemHypothesis: value })
-            }
-          />
-          <TargetTextarea
-            label="研究证据"
-            value={draft.researchEvidence}
-            onChange={(value) =>
-              setDraft({ ...draft, researchEvidence: value })
-            }
-          />
+        <div style={{ display: "grid", gap: 16, gridTemplateColumns: "1fr 1fr", padding: "20px 24px" }}>
+          <TargetInput label="对象姓名 *" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })} />
+          <TargetInput label="公司 *" value={draft.company} onChange={(v) => setDraft({ ...draft, company: v })} />
+          <TargetInput label="角色" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })} />
+          <TargetInput label="联系渠道" value={draft.channel} onChange={(v) => setDraft({ ...draft, channel: v })} />
+          <TargetTextarea label="具体联系理由 *" value={draft.contactReason} onChange={(v) => setDraft({ ...draft, contactReason: v })} />
+          <TargetTextarea label="问题假设 *" value={draft.problemHypothesis} onChange={(v) => setDraft({ ...draft, problemHypothesis: v })} />
+          <TargetTextarea label="研究证据" value={draft.researchEvidence} onChange={(v) => setDraft({ ...draft, researchEvidence: v })} />
           <label className="block">
             <span className="field-label">准备使用的已确认资产</span>
             <select
               value={draft.selectedAssetId}
-              onChange={(event) =>
-                setDraft({ ...draft, selectedAssetId: event.target.value })
-              }
-              className="text-field px-3.5 py-3 text-sm"
+              onChange={(e) => setDraft({ ...draft, selectedAssetId: e.target.value })}
+              className="text-field"
             >
               <option value="">稍后选择</option>
-              {approvedAssets.map((asset) => (
-                <option key={asset.id} value={asset.id}>
-                  {asset.title}
-                </option>
+              {approvedAssets.map((a) => (
+                <option key={a.id} value={a.id}>{a.title}</option>
               ))}
             </select>
           </label>
-          <div className="md:col-span-2">
+          <div style={{ gridColumn: "1 / -1" }}>
             <PrimaryButton onClick={addTarget}>
               <Plus size={15} /> 加入目标池
             </PrimaryButton>
@@ -230,6 +197,7 @@ export function PipelinePanel({
         </div>
       </section>
 
+      {/* Target Pool Empty */}
       {targets.length === 0 ? (
         <section className="panel">
           <EmptyPanel
@@ -238,225 +206,160 @@ export function PipelinePanel({
           />
         </section>
       ) : (
-        <div className="space-y-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {targets.map((target) => {
-            const targetActions = actions.filter(
-              (action) => action.targetId === target.id,
-            );
+            const targetActions = actions.filter((a) => a.targetId === target.id);
             return (
-              <article key={target.id} className="panel overflow-hidden">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e2ddd3] bg-[#faf7f1] px-5 py-4">
-                  <div>
-                    <h2 className="text-sm font-semibold">
-                      {target.name} · {target.company}
-                    </h2>
-                    <p className="mt-1 text-[11px] text-[#777970]">
-                      {target.role || "角色未填写"} · {target.channel || "渠道未填写"}
-                    </p>
+              <article key={target.id} className="panel" style={{ overflow: "hidden" }}>
+                <div className="section-header">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, width: "100%" }}>
+                    <div>
+                      <h2 className="section-header-title">{target.name} · {target.company}</h2>
+                      <p style={{ marginTop: 2, fontSize: 12, color: "var(--ink-soft)" }}>
+                        {target.role || "角色未填写"} · {target.channel || "渠道未填写"}
+                      </p>
+                    </div>
+                    <select
+                      value={target.status}
+                      onChange={(e) => updateTarget(target.id, { status: e.target.value as TargetRecord["status"] })}
+                      className="text-field"
+                      style={{ width: "auto", padding: "6px 10px", fontSize: 12 }}
+                    >
+                      {TARGET_STATUSES.map((s) => (
+                        <option key={s} value={s}>{TARGET_LABELS[s]}</option>
+                      ))}
+                    </select>
                   </div>
-                  <select
-                    value={target.status}
-                    onChange={(event) =>
-                      updateTarget(target.id, {
-                        status: event.target.value as TargetRecord["status"],
-                      })
-                    }
-                    className="rounded-lg border border-[#d9d3c8] bg-[#fffdf8] px-3 py-2 text-xs"
-                  >
-                    {TARGET_STATUSES.map((status) => (
-                      <option key={status} value={status}>
-                        {TARGET_LABELS[status]}
-                      </option>
-                    ))}
-                  </select>
                 </div>
-                <div className="space-y-4 p-5">
-                  <div className="grid gap-3 md:grid-cols-3">
+                <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr 1fr" }}>
                     <InfoBlock title="联系理由" value={target.contactReason} />
                     <InfoBlock title="问题假设" value={target.problemHypothesis} />
                     <InfoBlock title="研究证据" value={target.researchEvidence} />
                   </div>
-                  <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+                  <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr auto" }}>
                     <select
                       value={target.selectedAssetId}
-                      onChange={(event) =>
-                        updateTarget(target.id, {
-                          selectedAssetId: event.target.value,
-                        })
-                      }
-                      className="text-field px-3.5 py-3 text-sm"
+                      onChange={(e) => updateTarget(target.id, { selectedAssetId: e.target.value })}
+                      className="text-field"
+                      style={{ fontSize: 12 }}
                     >
                       <option value="">选择已人工确认的行动资产</option>
-                      {approvedAssets.map((asset) => (
-                        <option key={asset.id} value={asset.id}>
-                          {asset.title}
-                        </option>
+                      {approvedAssets.map((a) => (
+                        <option key={a.id} value={a.id}>{a.title}</option>
                       ))}
                     </select>
                     <button
                       type="button"
                       disabled={!target.selectedAssetId}
                       onClick={() => createAction(target)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d0c8bc] bg-[#fffdf8] px-4 py-3 text-xs font-semibold disabled:opacity-40"
+                      className="btn btn-secondary"
+                      style={{ whiteSpace: "nowrap" }}
                     >
                       建立待发送行动 <ArrowRight size={14} />
                     </button>
                   </div>
 
                   {targetActions.map((action) => {
-                    const asset = assets.find((item) => item.id === action.assetId);
-                    const diagnosis = [...diagnoses]
-                      .reverse()
-                      .find((item) => item.actionId === action.id);
+                    const asset = assets.find((a) => a.id === action.assetId);
+                    const diagnosis = [...diagnoses].reverse().find((d) => d.actionId === action.id);
                     return (
-                      <div
-                        key={action.id}
-                        className="rounded-xl border border-[#e1dcd2] bg-[#fffdf8] p-4"
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div key={action.id} style={{
+                        borderRadius: "var(--radius-md)",
+                        border: "1px solid var(--line-light)",
+                        background: "white",
+                        padding: "14px 16px",
+                      }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                           <div>
-                            <p className="text-xs font-semibold">
+                            <p style={{ fontSize: 13, fontWeight: 600 }}>
                               {asset?.title || action.assetTitle || "行动材料"}
                             </p>
-                            <p className="mt-1 font-mono text-[10px] text-[#8a8c84]">
+                            <p style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: "var(--ink-muted)", marginTop: 2 }}>
                               {action.id}
                             </p>
                           </div>
-                          <CopyButton
-                            text={action.contentSnapshot}
-                            label="复制发送内容"
-                          />
+                          <CopyButton text={action.contentSnapshot} label="复制发送内容" />
                           <select
                             value={action.status}
-                            onChange={(event) => {
-                              const status = event.target.value as ActionRecord["status"];
+                            onChange={(e) => {
+                              const status = e.target.value as ActionRecord["status"];
                               updateAction(action.id, {
                                 status,
-                                sentAt:
-                                  status === "sent" && !action.sentAt
-                                    ? new Date().toISOString()
-                                    : action.sentAt,
+                                sentAt: status === "sent" && !action.sentAt ? new Date().toISOString() : action.sentAt,
                               });
-                              const targetStatus =
-                                status === "sent"
-                                  ? "contacted"
-                                  : status === "replied"
-                                    ? "responded"
-                                    : status === "conversation"
-                                      ? "conversation"
-                                      : status === "trial"
-                                        ? "trial"
-                                        : status === "closed"
-                                          ? "closed"
-                                          : target.status;
+                              const targetStatus: TargetRecord["status"] =
+                                status === "sent" ? "contacted"
+                                : status === "replied" ? "responded"
+                                : status === "conversation" ? "conversation"
+                                : status === "trial" ? "trial"
+                                : status === "closed" ? "closed"
+                                : target.status;
                               updateTarget(target.id, { status: targetStatus });
                             }}
-                            className="rounded-lg border border-[#d9d3c8] bg-[#fffdf8] px-3 py-2 text-xs"
+                            className="text-field"
+                            style={{ width: "auto", padding: "6px 10px", fontSize: 12 }}
                           >
-                            {ACTION_STATUSES.map((status) => (
-                              <option key={status} value={status}>
-                                {ACTION_LABELS[status]}
-                              </option>
+                            {ACTION_STATUSES.map((s) => (
+                              <option key={s} value={s}>{ACTION_LABELS[s]}</option>
                             ))}
                           </select>
                         </div>
-                        <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        <div style={{ marginTop: 12, display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr" }}>
                           <label className="block">
                             <span className="field-label">真实反馈类型</span>
                             <select
                               value={action.feedbackType}
-                              onChange={(event) =>
-                                updateAction(action.id, {
-                                  feedbackType: event.target
-                                    .value as ActionRecord["feedbackType"],
-                                })
-                              }
-                              className="text-field px-3.5 py-3 text-sm"
+                              onChange={(e) => updateAction(action.id, { feedbackType: e.target.value as ActionRecord["feedbackType"] })}
+                              className="text-field"
+                              style={{ fontSize: 12 }}
                             >
-                              {FEEDBACK_TYPES.map((type) => (
-                                <option key={type} value={type}>
-                                  {FEEDBACK_LABELS[type]}
-                                </option>
+                              {FEEDBACK_TYPES.map((t) => (
+                                <option key={t} value={t}>{FEEDBACK_LABELS[t]}</option>
                               ))}
                             </select>
                           </label>
-                          <TargetInput
-                            label="下次跟进时间"
-                            type="date"
-                            value={action.followUpAt}
-                            onChange={(value) =>
-                              updateAction(action.id, { followUpAt: value })
-                            }
-                          />
-                          <TargetTextarea
-                            label="跟进必须带来的新信息"
-                            value={action.followUpNewInformation}
-                            onChange={(value) =>
-                              updateAction(action.id, {
-                                followUpNewInformation: value,
-                              })
-                            }
-                          />
-                          <TargetTextarea
-                            label="对方真实回复 / 发生了什么"
-                            value={action.feedbackText}
-                            onChange={(value) =>
-                              updateAction(action.id, { feedbackText: value })
-                            }
-                          />
-                          <TargetTextarea
-                            label="当前下一步"
-                            value={action.nextStep}
-                            onChange={(value) =>
-                              updateAction(action.id, { nextStep: value })
-                            }
-                          />
+                          <TargetInput label="下次跟进时间" type="date" value={action.followUpAt} onChange={(v) => updateAction(action.id, { followUpAt: v })} />
+                          <TargetTextarea label="跟进必须带来的新信息" value={action.followUpNewInformation} onChange={(v) => updateAction(action.id, { followUpNewInformation: v })} />
+                          <TargetTextarea label="对方真实回复 / 发生了什么" value={action.feedbackText} onChange={(v) => updateAction(action.id, { feedbackText: v })} />
+                          <TargetTextarea label="当前下一步" value={action.nextStep} onChange={(v) => updateAction(action.id, { nextStep: v })} />
                         </div>
-                        <button
-                          type="button"
-                          disabled={
-                            action.followUpCount >= 1 ||
-                            !action.followUpNewInformation.trim()
-                          }
-                          onClick={() =>
-                            updateAction(action.id, {
+                        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+                          <button
+                            type="button"
+                            disabled={action.followUpCount >= 1 || !action.followUpNewInformation.trim()}
+                            onClick={() => updateAction(action.id, {
                               followUpCount: 1,
-                              followUpAt:
-                                action.followUpAt ||
-                                new Date().toISOString().slice(0, 10),
-                            })
-                          }
-                          className="mt-3 mr-2 inline-flex items-center gap-2 rounded-lg border border-[#d0c8bc] px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          {action.followUpCount >= 1
-                            ? "已记录唯一一次跟进"
-                            : "记录一次有新信息的跟进"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onCalibrate(action.id)}
-                          disabled={calibratingActionId === action.id}
-                          className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#d0c8bc] px-3 py-2 text-xs font-semibold disabled:opacity-50"
-                        >
-                          <RefreshCw
-                            size={13}
-                            className={
-                              calibratingActionId === action.id
-                                ? "animate-spin"
-                                : ""
-                            }
-                          />
-                          根据真实反馈校准
-                        </button>
+                              followUpAt: action.followUpAt || new Date().toISOString().slice(0, 10),
+                            })}
+                            className="btn btn-ghost"
+                            style={{ fontSize: 12, border: "1px solid var(--line)" }}
+                          >
+                            {action.followUpCount >= 1 ? "已记录唯一一次跟进" : "记录一次有新信息的跟进"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onCalibrate(action.id)}
+                            disabled={calibratingActionId === action.id}
+                            className="btn btn-ghost"
+                            style={{ fontSize: 12, border: "1px solid var(--line)" }}
+                          >
+                            <RefreshCw size={13} className={calibratingActionId === action.id ? "animate-spin" : ""} />
+                            根据真实反馈校准
+                          </button>
+                        </div>
                         {diagnosis && (
-                          <div className="mt-3 rounded-xl bg-[#f3eee6] p-4 text-xs leading-6">
-                            <p className="font-semibold">
-                              校准：{diagnosis.failureLayer}
-                            </p>
-                            <p className="mt-1">{diagnosis.diagnosis}</p>
-                            <p className="mt-2">
-                              <strong>下一步：</strong>{diagnosis.nextAction}
-                            </p>
+                          <div style={{
+                            marginTop: 10,
+                            borderRadius: "var(--radius-md)",
+                            background: "var(--paper-raised)",
+                            padding: "12px 14px",
+                            fontSize: 12,
+                            lineHeight: 1.6,
+                          }}>
+                            <p style={{ fontWeight: 600 }}>校准：{diagnosis.failureLayer}</p>
+                            <p style={{ marginTop: 2, color: "var(--ink-soft)" }}>{diagnosis.diagnosis}</p>
+                            <p style={{ marginTop: 6 }}><strong>下一步：</strong>{diagnosis.nextAction}</p>
                           </div>
                         )}
                       </div>
@@ -472,57 +375,33 @@ export function PipelinePanel({
   );
 }
 
-function TargetInput({
-  label,
-  value,
-  onChange,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: "text" | "date";
+function TargetInput({ label, value, onChange, type = "text" }: {
+  label: string; value: string; onChange: (v: string) => void; type?: "text" | "date";
 }) {
   return (
     <label className="block">
       <span className="field-label">{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="text-field px-3.5 py-3 text-sm"
-      />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="text-field" />
     </label>
   );
 }
 
-function TargetTextarea({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
+function TargetTextarea({ label, value, onChange }: {
+  label: string; value: string; onChange: (v: string) => void;
 }) {
   return (
     <label className="block">
       <span className="field-label">{label}</span>
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        rows={3}
-        className="text-field px-3.5 py-3 text-sm"
-      />
+      <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} className="text-field" />
     </label>
   );
 }
 
 function InfoBlock({ title, value }: { title: string; value: string }) {
   return (
-    <div className="rounded-xl bg-[#f8f5ee] p-3">
-      <p className="text-[11px] font-semibold text-[#777970]">{title}</p>
-      <p className="mt-1 text-xs leading-5">{value || "尚未填写"}</p>
+    <div style={{ borderRadius: "var(--radius-md)", background: "var(--paper-raised)", padding: "10px 12px" }}>
+      <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-muted)" }}>{title}</p>
+      <p style={{ marginTop: 4, fontSize: 12, lineHeight: 1.5 }}>{value || "尚未填写"}</p>
     </div>
   );
 }
